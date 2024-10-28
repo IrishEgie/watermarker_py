@@ -1,7 +1,7 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QPushButton
 from PyQt6.QtCore import Qt, QMimeData, QPoint
-
+from PyQt6.QtGui import QDrag  # Import QDrag
 
 class DraggableWatermark(QLabel):
     def __init__(self, text, parent=None):
