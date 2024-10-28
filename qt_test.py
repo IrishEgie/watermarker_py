@@ -1,49 +1,34 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QPushButton, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget
+from PyQt6.QtCore import Qt  # Import Qt here
 
-class MainWindow(QMainWindow):
+
+class TestApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        
-        # Set the window title and size
-        self.setWindowTitle("Login")
-        self.setGeometry(100, 100, 400, 300)
+
+        # Set window title
+        self.setWindowTitle("Test App")
+
+        # Set window size (width, height)
+        self.setFixedSize(300, 400)  # Adjust to desired size
 
         # Create a central widget and layout
         central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-        layout = QVBoxLayout(central_widget)
+        layout = QVBoxLayout()
 
-        # Add UI Elements
-        label = QLabel("Login", self)
+        # Add a label for demonstration
+        label = QLabel("This is a test app.")
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
         layout.addWidget(label)
-
-        self.username_edit = QLineEdit(self)
-        self.username_edit.setPlaceholderText("Username")
-        layout.addWidget(self.username_edit)
-
-        self.password_edit = QLineEdit(self)
-        self.password_edit.setPlaceholderText("Password")
-        self.password_edit.setEchoMode(QLineEdit.Password)
-        layout.addWidget(self.password_edit)
-
-        login_button = QPushButton("Login", self)
-        layout.addWidget(login_button)
-
-        # Connect button to a method (for later functionality)
-        login_button.clicked.connect(self.on_login)
-
-        # Set the layout to central widget
         central_widget.setLayout(layout)
-
-    def on_login(self):
-        # Placeholder for login logic
-        username = self.username_edit.text()
-        password = self.password_edit.text()
-        print(f"Username: {username}, Password: {password}")
+        
+        # Set central widget
+        self.setCentralWidget(central_widget)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = MainWindow()
-    window.showFullScreen()  # Full screen for testing
-    sys.exit(app.exec_())
+    window = TestApp()
+    window.show()
+    sys.exit(app.exec())
