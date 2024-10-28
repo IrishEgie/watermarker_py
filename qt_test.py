@@ -1,6 +1,24 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QPushButton
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QMimeData, QPoint
+
+
+class DraggableWatermark(QLabel):
+    def __init__(self, text, parent=None):
+        super().__init__(text, parent)
+        self.setStyleSheet("background-color: rgba(255, 255, 255, 0.5); padding: 10px;")
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setAcceptDrops(True)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            # Start dragging
+            mime_data = QMimeData()
+            mime_data.setText(self.text())
+            drag = QDrag(self)
+            drag.setMimeData(mime_data)
+            drag.setHotSpot(event.pos())
+            drag.exec(Qt.DropAction.Move)
 
 class RoundedButton(QPushButton):
     def __init__(self, text, parent=None):
