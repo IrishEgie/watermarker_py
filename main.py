@@ -1,62 +1,97 @@
-import tkinter as tk
-from tkinter import filedialog, messagebox
-from tkinterdnd2 import DND_FILES, TkinterDnD
-from PIL import Image, ImageDraw, ImageFont
+import sys
+from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QPushButton, QFrame
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPixmap, QPainter, QRegion
+class DraggableFrame(QFrame):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setStyleSheet("border: 2px dashed #4CAF50; padding: 10px;")
+        self.setAcceptDrops(True)
+        self.setMinimumSize(250, 200)
 
-def create_main_window():
-    window = TkinterDnD.Tk()
-    window.title("Image Watermarking Tool")
-    window.geometry("400x300")
-    return window
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
 
-def upload_image(file_path=None):
-    if not file_path:
-        file_path = filedialog.askopenfilename(title="Select an Image", filetypes=[("Image Files", "*.png;*.jpg;*.jpeg")])
-    
-    if file_path:
-        img = Image.open(file_path)
-        return img
-    return None
+    def dropEvent(self, event):
+        for url in event.mimeData().urls():
+            print(f'Dropped file: {url.toLocalFile()}')  # Handle the dropped file
 
-def add_watermark(image, text="Sample Watermark"):
-    watermark = Image.new("RGBA", image.size)
-    draw = ImageDraw.Draw(watermark)
-    font = ImageFont.load_default()
-    text_width, text_height = draw.textsize(text, font)
-    position = (image.width - text_width - 10, image.height - text_height - 10)
-    draw.text(position, text, fill=(255, 255, 255, 128), font=font)
-    watermarked = Image.alpha_composite(image.convert("RGBA"), watermark)
-    return watermarked.convert("RGB")
+class RoundedButton(QPushButton):
+    def __init__(self, text, parent=None):
+        super().__init__(text, parent)
+        self.setStyleSheet("""
+            QPushButton {
+                border: 2px solid #4CAF50;
+                border-radius: 15px;
+                background-color: #f0f0f0;
+                padding: 10px;
+            }
+            QPushButton:hover {
+                background-color: #e7e7e7;
+            }
+            QPushButton:pressed {
+                background-color: #d0d0d0;
+                border: 2px solid #3e8e41;
+            }
+        """)
 
-def save_image(image):
-    file_path = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png"), ("JPEG files", "*.jpg")])
-    if file_path:
-        image.save(file_path)
-        messagebox.showinfo("Success", "Image saved successfully!")
+class TestApp(QMainWindow):
+    def __init__(self):
+        super().__init__()
 
-def drop(event):
-    file_path = event.data
-    img = upload_image(file_path)
-    if img:
-        messagebox.showinfo("Success", "Image loaded successfully!")
+        # Set window title and size
+        self.setWindowTitle("Watermark App")
+        self.setFixedSize(600, 600)  # Adjusted size
 
-def main():
-    window = create_main_window()
+        # Create a central widget and layout
+        central_widget = QWidget()
+        layout = QVBoxLayout()
 
-    # Bind drag-and-drop functionality
-    window.drop_target_register(DND_FILES)
-    window.dnd_bind('<<Drop>>', drop)
+        # Add logo image
+        self.logo_label = QLabel()
+        self.logo_pixmap = QPixmap("watermark.svg").scaled(128, 128, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        rounded_pixmap = create_rounded_pixmap(self.logo_pixmap, 128)  # Create rounded pixmap with radius 128
+        self.logo_label.setPixmap(rounded_pixmap)
+        self.logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-    upload_btn = tk.Button(window, text="Upload Image", command=lambda: upload_image())
-    upload_btn.pack(pady=10)
+        # Add a rounded button
+        rounded_button = RoundedButton("Select Files", self)
 
-    watermark_btn = tk.Button(window, text="Add Watermark", command=lambda: add_watermark(img))
-    watermark_btn.pack(pady=10)
+        # Add a label for drag-and-drop instruction
+        drag_label = QLabel("Or drag your files here.")
+        drag_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-    save_btn = tk.Button(window, text="Save Image", command=lambda: save_image(img))
-    save_btn.pack(pady=10)
+        # Create a draggable frame for dropping files
+        self.draggable_frame = DraggableFrame()
 
-    window.mainloop()
+        # Add widgets to the layout
+        layout.addWidget(self.logo_label)
+        layout.addWidget(rounded_button)
+        layout.addWidget(drag_label)
+        layout.addWidget(self.draggable_frame)
+
+        central_widget.setLayout(layout)
+        self.setCentralWidget(central_widget)
+
+def create_rounded_pixmap(pixmap, radius):
+    rounded_pixmap = QPixmap(pixmap.size())
+    rounded_pixmap.fill(Qt.GlobalColor.transparent)  # Fill with transparent color
+
+    painter = QPainter(rounded_pixmap)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    painter.setBrush(Qt.GlobalColor.white)  # Fill with white or any background color
+    painter.setPen(Qt.GlobalColor.transparent)  # No border
+    painter.drawRoundedRect(0, 0, pixmap.width(), pixmap.height(), radius, radius)
+    painter.setClipRegion(QRegion(rounded_pixmap.rect(), QRegion.RegionType.Ellipse))
+    painter.drawPixmap(0, 0, pixmap)  # Draw original pixmap
+    painter.end()
+
+    return rounded_pixmap
+
 
 if __name__ == "__main__":
-    main()
+    app = QApplication(sys.argv)
+    window = TestApp()
+    window.show()
+    sys.exit(app.exec())
