@@ -9,8 +9,6 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Watermarker')
         self.setFixedSize(500, 500)  # Set a fixed size for the window
         self.center()  # Center the window on startup
-        self. setWindowIcon(QIcon('watermark.svg'))
-
 
     def center(self):
         # Get the screen's geometry
