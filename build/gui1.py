@@ -43,129 +43,66 @@ image_1 = canvas.create_image(
     image=image_image_1
 )
 
-canvas.create_rectangle(
-    505.0,
-    27.0,
-    781.0,
-    379.0,
-    fill="#FFFFFF",
-    outline="")
-
-canvas.create_text(
-    548.0,
-    39.0,
-    anchor="nw",
-    text="Properties",
-    fill="#000000",
-    font=("Inter Bold", 16 * -1)
+image_image_2 = PhotoImage(
+    file=relative_to_assets("image_2.png"))
+image_2 = canvas.create_image(
+    400.0,
+    330.0,
+    image=image_image_2
 )
 
-canvas.create_rectangle(
-    520.0,
-    79.0,
-    760.0,
-    113.0,
-    fill="#FFFFFF",
-    outline="")
-
-canvas.create_rectangle(
-    520.0,
-    79.0,
-    760.0,
-    113.0,
-    fill="#FFFFFF",
-    outline="")
-
-canvas.create_rectangle(
-    520.0,
-    79.0,
-    760.0,
-    113.0,
-    fill="#FFFFFF",
-    outline="")
-
 canvas.create_text(
-    529.0,
-    88.0,
+    40.0,
+    85.0,
     anchor="nw",
-    text="Text",
-    fill="#000000",
+    text="Watermark",
+    fill="#FFFFFF",
     font=("Inter", 12 * -1)
 )
 
-entry_image_1 = PhotoImage(
-    file=relative_to_assets("entry_1.png"))
-entry_bg_1 = canvas.create_image(
-    667.0,
-    96.0,
-    image=entry_image_1
-)
-entry_1 = Entry(
-    bd=0,
-    bg="#D9D9D9",
-    fg="#000716",
-    highlightthickness=0
-)
-entry_1.place(
-    x=577.0,
-    y=83.0,
-    width=180.0,
-    height=24.0
-)
-
-canvas.create_rectangle(
-    520.0,
-    133.0,
-    760.0,
-    167.0,
-    fill="#FFFFFF",
-    outline="")
-
 canvas.create_text(
-    529.0,
-    142.0,
+    700.0,
+    85.0,
     anchor="nw",
-    text="Font",
-    fill="#000000",
+    text="Watermark",
+    fill="#FFFFFF",
     font=("Inter", 12 * -1)
 )
 
-entry_image_2 = PhotoImage(
-    file=relative_to_assets("entry_2.png"))
-entry_bg_2 = canvas.create_image(
-    667.0,
-    150.0,
-    image=entry_image_2
+canvas.create_text(
+    700.0,
+    560.0,
+    anchor="nw",
+    text="Watermark",
+    fill="#FFFFFF",
+    font=("Inter", 12 * -1)
 )
-entry_2 = Entry(
-    bd=0,
-    bg="#D9D9D9",
-    fg="#000716",
-    highlightthickness=0
+
+canvas.create_text(
+    40.0,
+    560.0,
+    anchor="nw",
+    text="Watermark",
+    fill="#FFFFFF",
+    font=("Inter", 12 * -1)
 )
-entry_2.place(
-    x=577.0,
-    y=137.0,
-    width=180.0,
-    height=24.0
+
+canvas.create_text(
+    375.0,
+    277.0,
+    anchor="nw",
+    text="Watermark",
+    fill="#FFFFFF",
+    font=("Inter", 12 * -1)
 )
 
 canvas.create_rectangle(
-    520.0,
-    183.0,
-    760.0,
-    283.0,
+    0.0,
+    0.0,
+    800.0,
+    60.0,
     fill="#FFFFFF",
     outline="")
-
-canvas.create_text(
-    527.0,
-    193.0,
-    anchor="nw",
-    text="Position",
-    fill="#000000",
-    font=("Inter", 12 * -1)
-)
 
 button_image_1 = PhotoImage(
     file=relative_to_assets("button_1.png"))
@@ -177,10 +114,10 @@ button_1 = Button(
     relief="flat"
 )
 button_1.place(
-    x=667.0,
-    y=190.0,
-    width=85.0,
-    height=26.0
+    x=19.0,
+    y=19.0,
+    width=63.0,
+    height=23.0
 )
 
 button_image_2 = PhotoImage(
@@ -193,10 +130,10 @@ button_2 = Button(
     relief="flat"
 )
 button_2.place(
-    x=667.0,
-    y=220.0,
-    width=85.0,
-    height=26.0
+    x=717.0,
+    y=19.0,
+    width=63.0,
+    height=23.0
 )
 
 button_image_3 = PhotoImage(
@@ -209,10 +146,10 @@ button_3 = Button(
     relief="flat"
 )
 button_3.place(
-    x=577.0,
-    y=220.0,
-    width=85.0,
-    height=26.0
+    x=312.0,
+    y=19.0,
+    width=78.0,
+    height=23.0
 )
 
 button_image_4 = PhotoImage(
@@ -225,95 +162,10 @@ button_4 = Button(
     relief="flat"
 )
 button_4.place(
-    x=617.0,
-    y=250.0,
-    width=85.0,
-    height=26.0
-)
-
-button_image_5 = PhotoImage(
-    file=relative_to_assets("button_5.png"))
-button_5 = Button(
-    image=button_image_5,
-    borderwidth=0,
-    highlightthickness=0,
-    command=lambda: print("button_5 clicked"),
-    relief="flat"
-)
-button_5.place(
-    x=532.0,
-    y=313.0,
-    width=225.0,
-    height=26.0
-)
-
-button_image_6 = PhotoImage(
-    file=relative_to_assets("button_6.png"))
-button_6 = Button(
-    image=button_image_6,
-    borderwidth=0,
-    highlightthickness=0,
-    command=lambda: print("button_6 clicked"),
-    relief="flat"
-)
-button_6.place(
-    x=577.0,
-    y=190.0,
-    width=85.0,
-    height=26.0
-)
-
-image_image_2 = PhotoImage(
-    file=relative_to_assets("image_2.png"))
-image_2 = canvas.create_image(
-    257.0,
-    299.0,
-    image=image_image_2
-)
-
-canvas.create_text(
-    38.0,
-    38.0,
-    anchor="nw",
-    text="Watermark",
-    fill="#FFFFFF",
-    font=("Inter", 12 * -1)
-)
-
-canvas.create_text(
-    400.0,
-    38.0,
-    anchor="nw",
-    text="Watermark",
-    fill="#FFFFFF",
-    font=("Inter", 12 * -1)
-)
-
-canvas.create_text(
-    400.0,
-    539.0,
-    anchor="nw",
-    text="Watermark",
-    fill="#FFFFFF",
-    font=("Inter", 12 * -1)
-)
-
-canvas.create_text(
-    38.0,
-    535.0,
-    anchor="nw",
-    text="Watermark",
-    fill="#FFFFFF",
-    font=("Inter", 12 * -1)
-)
-
-canvas.create_text(
-    224.0,
-    292.0,
-    anchor="nw",
-    text="Watermark",
-    fill="#FFFFFF",
-    font=("Inter", 12 * -1)
+    x=400.0,
+    y=19.0,
+    width=77.8985595703125,
+    height=23.0
 )
 window.resizable(False, False)
 window.mainloop()
