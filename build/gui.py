@@ -52,17 +52,17 @@ image_2 = canvas.create_image(
 )
 
 canvas.create_text(
-    308.0,
-    147.0,
+    230.0,
+    134.0,
     anchor="nw",
     text="Add Watermark",
     fill="#000000",
-    font=("Inter Bold", 24 * -1)
+    font=("Inter Bold", 36 * -1)
 )
 
 canvas.create_text(
     336.0,
-    260.0,
+    274.0,
     anchor="nw",
     text="or drag your files here",
     fill="#000000",
@@ -79,10 +79,10 @@ button_1 = Button(
     relief="flat"
 )
 button_1.place(
-    x=308.0,
-    y=185.0,
-    width=184.0,
-    height=48.0
+    x=248.0,
+    y=187.0,
+    width=304.0,
+    height=31.0
 )
 window.resizable(False, False)
 window.mainloop()
