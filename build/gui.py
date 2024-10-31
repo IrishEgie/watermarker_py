@@ -46,14 +46,14 @@ image_1 = canvas.create_image(
 image_image_2 = PhotoImage(
     file=relative_to_assets("image_2.png"))
 image_2 = canvas.create_image(
+    400.0,
     399.0,
-    430.0,
     image=image_image_2
 )
 
 canvas.create_text(
-    230.0,
-    180.0,
+    308.0,
+    147.0,
     anchor="nw",
     text="Add Watermark",
     fill="#000000",
@@ -61,8 +61,8 @@ canvas.create_text(
 )
 
 canvas.create_text(
-    230.0,
-    295.0,
+    336.0,
+    260.0,
     anchor="nw",
     text="or drag your files here",
     fill="#000000",
@@ -80,17 +80,9 @@ button_1 = Button(
 )
 button_1.place(
     x=308.0,
-    y=221.0,
-    width=184.25860595703125,
-    height=45.0
-)
-
-image_image_3 = PhotoImage(
-    file=relative_to_assets("image_3.png"))
-image_3 = canvas.create_image(
-    400.0,
-    113.0,
-    image=image_image_3
+    y=185.0,
+    width=184.0,
+    height=48.0
 )
 window.resizable(False, False)
 window.mainloop()
