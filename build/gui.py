@@ -30,7 +30,6 @@ def open_screen_2():
     window.destroy()
     importlib.util.module_from_spec(importlib.util.spec_from_file_location("gui1", "build/gui1.py")).loader.exec_module(spec)
 
-
 # Initialize main window for Screen 1
 window = TkinterDnD.Tk()
 window.geometry("800x600")
@@ -44,32 +43,11 @@ image_1 = canvas.create_image(400.0, 300.0, image=image_image_1)
 image_image_2 = PhotoImage(file=relative_to_assets("image_2.png"))
 image_2 = canvas.create_image(400.0, 400.0, image=image_image_2)
 
-canvas.create_text(
-    260.0,
-    134.0,
-    anchor="nw",
-    text="Add Watermark",
-    fill="#000000",
-    font=("Inter Bold", 36 * -1)
-)
-
-canvas.create_text(
-    336.0,
-    274.0,
-    anchor="nw",
-    text="or drag your files here",
-    fill="#000000",
-    font=("Inter", 12 * -1)
-)
-
+canvas.create_text(265.0, 134.0, anchor="nw", text="Add Watermark", fill="#000000", font=("Inter Bold", -36))
+canvas.create_text(336.0, 274.0, anchor="nw", text="or drag your files here", fill="#000000", font=("Inter", -12))
+#Button
 button_image_1 = PhotoImage(file=relative_to_assets("button_1.png"))
-button_1 = Button(
-    image=button_image_1,
-    borderwidth=0,
-    highlightthickness=0,
-    command=select_file,
-    relief="flat"
-)
+button_1 = Button(image=button_image_1, borderwidth=0, highlightthickness=0, command=select_file, relief="flat")
 button_1.place(x=248.0, y=187.0, width=305.0, height=30.0)
 
 # Enable drag-and-drop on the window
