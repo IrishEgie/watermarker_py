@@ -15,25 +15,36 @@ selected_file_path = None
 def relative_to_assets(path: str) -> Path: return ASSETS_PATH / Path(path)
 
 def on_drop(event):
-    global selected_file_path  # Declare the global variable
+    global selected_file_path
     file_path = event.data.strip('{}')
     print(f"File dropped: {file_path}")
     messagebox.showinfo("File Uploaded", f"File uploaded: {file_path}")
+    selected_file_path = file_path  # Update the global variable
     open_screen_2()
 
 def select_file():
-    global selected_file_path  # Declare the global variable
+    global selected_file_path
     initial_dir = os.path.join(os.environ['USERPROFILE'], 'Pictures') if sys.platform.startswith('win') else os.path.expanduser('~/Pictures')
     file_path = filedialog.askopenfilename(initialdir=initial_dir, filetypes=[("All Files", "*.*")])
     if file_path and any(file_path.lower().endswith(ext) for ext in {'.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff'}):
+        selected_file_path = file_path
         print(f"File selected: {file_path}")
         messagebox.showinfo("File Selected", f"File selected: {file_path}")
         open_screen_2()
-    else: messagebox.showwarning("Invalid File Type", "The selected file is not an image. Please select a valid image file.")
+    else:
+        messagebox.showwarning("Invalid File Type", "The selected file is not an image. Please select a valid image file.")
 
 def open_screen_2():
+    global selected_file_path  # Ensure it is accessed as a global variable
+    print(f"Transitioning to Screen 2 with selected_file_path: {selected_file_path}")  # Debugging output
+    if selected_file_path is None:
+        messagebox.showwarning("No File Selected", "Please select a valid image file first.")
+        return
+
+    # Destroy the current window
     window.destroy()
-    importlib.util.module_from_spec(importlib.util.spec_from_file_location("gui1", "build/gui1.py")).loader.exec_module()
+    # Import and run Screen 2
+    import gui1  # Import the screen directly instead of using exec_module
 
 # Initialize main window for Screen 1
 window = TkinterDnD.Tk()

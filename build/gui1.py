@@ -1,5 +1,7 @@
 from pathlib import Path
 from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage
+from PIL import Image, ImageTk
+import os
 
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"/run/media/ejarao/STORAGE/4 Dev Library/2 Python/watermarker_py/build/assets/frame1")
@@ -17,8 +19,21 @@ canvas.place(x=0, y=0)
 image_image_1 = PhotoImage(file=relative_to_assets("image_1.png"))
 canvas.create_image(400.0, 300.0, image=image_image_1)
 
-image_image_2 = PhotoImage(file=relative_to_assets("image_2.png"))
-image_2 = canvas.create_image(400.0, 330.0, image=image_image_2)
+# Load the selected image from the global variable
+selected_image_path = globals().get('selected_file_path')
+
+# Check if the selected image path is valid
+if selected_image_path:
+    print("Checking if the file exists...")
+    if os.path.exists(selected_image_path):
+        print("File exists, loading image...")
+        img = PhotoImage(file=selected_image_path)
+        canvas.create_image(400.0, 330.0, image=img)
+        canvas.image = img  # Keep a reference to avoid garbage collection
+    else:
+        print("Error: File does not exist.")
+else:
+    print("Error: No selected image path found.")
 
 
 watermark_positions = [(40.0, 85.0), (700.0, 85.0), (700.0, 560.0), (40.0, 560.0), (375.0, 277.0)]
