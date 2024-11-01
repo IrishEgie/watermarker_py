@@ -4,13 +4,12 @@ from tkinterdnd2 import DND_FILES, TkinterDnD
 from PIL import Image, ImageTk
 import os
 import sys
-import importlib.util
+from config import Config  # Import the Config class
 
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"/run/media/ejarao/STORAGE/4 Dev Library/2 Python/watermarker_py/build/assets/frame0")
 
-# Declare a global variable to store the file path
-selected_file_path = None
+selected_image_path = Config.selected_file_path
 
 def relative_to_assets(path: str) -> Path: return ASSETS_PATH / Path(path)
 
@@ -27,7 +26,7 @@ def select_file():
     initial_dir = os.path.join(os.environ['USERPROFILE'], 'Pictures') if sys.platform.startswith('win') else os.path.expanduser('~/Pictures')
     file_path = filedialog.askopenfilename(initialdir=initial_dir, filetypes=[("All Files", "*.*")])
     if file_path and any(file_path.lower().endswith(ext) for ext in {'.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff'}):
-        selected_file_path = file_path
+        Config.selected_file_path = file_path
         print(f"File selected: {file_path}")
         messagebox.showinfo("File Selected", f"File selected: {file_path}")
         open_screen_2()
@@ -35,16 +34,10 @@ def select_file():
         messagebox.showwarning("Invalid File Type", "The selected file is not an image. Please select a valid image file.")
 
 def open_screen_2():
-    global selected_file_path  # Ensure it is accessed as a global variable
-    print(f"Transitioning to Screen 2 with selected_file_path: {selected_file_path}")  # Debugging output
-    if selected_file_path is None:
-        messagebox.showwarning("No File Selected", "Please select a valid image file first.")
-        return
-
-    # Destroy the current window
+    print(f"Transitioning to Screen 2 with selected_file_path: {Config.selected_file_path}")  # Debugging output
     window.destroy()
-    # Import and run Screen 2
-    import gui1  # Import the screen directly instead of using exec_module
+    import gui1  # Import and run Screen 2
+
 
 # Initialize main window for Screen 1
 window = TkinterDnD.Tk()
