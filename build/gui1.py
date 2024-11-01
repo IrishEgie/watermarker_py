@@ -19,11 +19,12 @@ canvas.create_image(400.0, 300.0, image=image_image_1)
 
 image_image_2 = PhotoImage(file=relative_to_assets("image_2.png"))
 image_2 = canvas.create_image(400.0, 330.0, image=image_image_2)
+
+
 watermark_positions = [(40.0, 85.0), (700.0, 85.0), (700.0, 560.0), (40.0, 560.0), (375.0, 277.0)]
 for pos in watermark_positions:
     canvas.create_text(pos[0], pos[1], anchor="nw", text="Watermark", fill="#FFFFFF", font=("Inter", 12 * -1))
 canvas.create_rectangle(0.0, 0.0, 800.0, 60.0, fill="#FFFFFF", outline="")
-
 
 buttons = [
     ("button_1.png", (19.0, 19.0), 63.0, 23.0, "button_1 clicked"),

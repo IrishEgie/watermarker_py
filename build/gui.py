@@ -9,15 +9,20 @@ import importlib.util
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"/run/media/ejarao/STORAGE/4 Dev Library/2 Python/watermarker_py/build/assets/frame0")
 
+# Declare a global variable to store the file path
+selected_file_path = None
+
 def relative_to_assets(path: str) -> Path: return ASSETS_PATH / Path(path)
 
 def on_drop(event):
+    global selected_file_path  # Declare the global variable
     file_path = event.data.strip('{}')
     print(f"File dropped: {file_path}")
     messagebox.showinfo("File Uploaded", f"File uploaded: {file_path}")
     open_screen_2()
 
 def select_file():
+    global selected_file_path  # Declare the global variable
     initial_dir = os.path.join(os.environ['USERPROFILE'], 'Pictures') if sys.platform.startswith('win') else os.path.expanduser('~/Pictures')
     file_path = filedialog.askopenfilename(initialdir=initial_dir, filetypes=[("All Files", "*.*")])
     if file_path and any(file_path.lower().endswith(ext) for ext in {'.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff'}):
@@ -28,7 +33,7 @@ def select_file():
 
 def open_screen_2():
     window.destroy()
-    importlib.util.module_from_spec(importlib.util.spec_from_file_location("gui1", "build/gui1.py")).loader.exec_module(spec)
+    importlib.util.module_from_spec(importlib.util.spec_from_file_location("gui1", "build/gui1.py")).loader.exec_module()
 
 # Initialize main window for Screen 1
 window = TkinterDnD.Tk()
