@@ -14,6 +14,10 @@ class ImageGallery(tk.Tk):
         self.img_tk = ImageTk.PhotoImage(self.image)
         self.image_id = self.canvas.create_image(0, 0, image=self.img_tk, anchor='nw')
 
+        # Label to display zoom level
+        self.zoom_label = tk.Label(self, text=f"Zoom: {int(self.zoom_factor * 100)}%", bg="white")
+        self.zoom_label.place(x=30, y=self.winfo_height() - 30, anchor='sw')
+
         # Bind mouse wheel events for zooming
         self.bind("<MouseWheel>", self.zoom)  # Windows
         self.bind("<Button-4>", self.zoom_in)  # Linux zoom in
@@ -31,30 +35,67 @@ class ImageGallery(tk.Tk):
         self.top_limit = 150
         self.bottom_limit = 150
 
+        # Update zoom label position on resize
+        self.bind("<Configure>", self.update_label_position)
+
     def zoom(self, event):
-        if event.delta > 0 or event.num == 4:  # Zoom in
-            self.zoom_factor *= 1.1
-        elif event.delta < 0 or event.num == 5:  # Zoom out
-            self.zoom_factor /= 1.1
+        # Get the mouse position on the canvas
+        mouse_x = event.x
+        mouse_y = event.y
 
-        # Limit zoom factor
-        self.zoom_factor = max(0.1, min(self.zoom_factor, 5.0))
+        # Calculate the current image position
+        x, y = self.canvas.coords(self.image_id)
 
+        # Calculate image boundaries
+        img_width = int(self.image.width * self.zoom_factor)
+        img_height = int(self.image.height * self.zoom_factor)
+
+        # Check if the cursor is over the image
+        if (x <= mouse_x <= x + img_width) and (y <= mouse_y <= y + img_height):
+            # Determine the new zoom factor
+            if event.delta > 0 or event.num == 4:  # Zoom in
+                new_zoom_factor = min(self.zoom_factor * 1.1, 2.0)  # Max zoom out to 200%
+                if new_zoom_factor != self.zoom_factor:
+                    rel_x = mouse_x - x
+                    rel_y = mouse_y - y
+                    self.zoom_factor = new_zoom_factor
+                    new_x = mouse_x - (rel_x * self.zoom_factor)
+                    new_y = mouse_y - (rel_y * self.zoom_factor)
+
+            elif event.delta < 0 or event.num == 5:  # Zoom out
+                new_zoom_factor = max(self.zoom_factor / 1.1, 0.5)  # Min zoom in to 10%
+                if new_zoom_factor != self.zoom_factor:
+                    self.zoom_factor = new_zoom_factor
+                    new_x = (self.canvas.winfo_width() - img_width) // 2
+                    new_y = (self.canvas.winfo_height() - img_height) // 2
+        else:
+            # If cursor is not over the image, keep the current zoom
+            return
+
+        # Update the image size and label
+        self.update_image()
+
+        # Move the image to the new position
+        self.canvas.coords(self.image_id, new_x, new_y)
+
+
+    def zoom_in(self, event):
+        self.zoom(event)
+
+    def zoom_out(self, event):
+        self.zoom(event)
+
+    def update_image(self):
         new_size = (int(self.image.width * self.zoom_factor), int(self.image.height * self.zoom_factor))
         resized_image = self.image.resize(new_size, Image.LANCZOS)
         self.img_tk = ImageTk.PhotoImage(resized_image)
         self.canvas.itemconfig(self.image_id, image=self.img_tk)
 
+        # Update the zoom label
+        self.zoom_label.config(text=f"Zoom: {int(self.zoom_factor * 100)}%")
+
         # Reposition to keep it centered after zooming
         self.center_image()
-
-    def zoom_in(self, event):
-        self.zoom_factor *= 1.1
-        self.zoom(event)
-
-    def zoom_out(self, event):
-        self.zoom_factor /= 1.1
-        self.zoom(event)
 
     def start_drag(self, event):
         self.prev_x = event.x
@@ -93,6 +134,10 @@ class ImageGallery(tk.Tk):
         new_x = (self.canvas.winfo_width() - img_width) // 2
         new_y = (self.canvas.winfo_height() - img_height) // 2
         self.canvas.coords(self.image_id, new_x, new_y)
+
+    def update_label_position(self, event):
+        # Update the position of the zoom label when the window is resized
+        self.zoom_label.place(x=30, y=self.winfo_height() - 30, anchor='sw')
 
 if __name__ == "__main__":
     app = ImageGallery("build/assets/frame0/image_1.png")
