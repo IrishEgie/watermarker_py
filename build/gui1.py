@@ -22,7 +22,7 @@ canvas.create_image(400.0, 300.0, image=image_image_1)
 
 selected_image_path = Config.selected_file_path
 
-# Debugging output to check the selected file path
+# Debugging output to check the selected file pathz
 print("Selected image path:", selected_image_path)
 
 if selected_image_path and os.path.exists(selected_image_path):
