@@ -50,8 +50,8 @@ if selected_image_path and os.path.exists(selected_image_path):
             new_width = canvas_width
             new_height = int(new_width / aspect_ratio)
         
-        # Resize the image
-        pil_image = pil_image.resize((new_width, new_height), Image.ANTIALIAS)
+        # Resize the image using LANCZOS filter
+        pil_image = pil_image.resize((new_width, new_height), Image.LANCZOS)
         
         # Convert to PhotoImage for Tkinter
         img = ImageTk.PhotoImage(pil_image)
@@ -63,6 +63,8 @@ if selected_image_path and os.path.exists(selected_image_path):
         print(f"Error loading image: {e}")
 else:
     print("Error: No selected image path found or file does not exist.")
+
+
 watermark_positions = [(40.0, 85.0), (700.0, 85.0), (700.0, 560.0), (40.0, 560.0), (375.0, 277.0)]
 for pos in watermark_positions:
     canvas.create_text(pos[0], pos[1], anchor="nw", text="Watermark", fill="#FFFFFF", font=("Inter", 12 * -1))
