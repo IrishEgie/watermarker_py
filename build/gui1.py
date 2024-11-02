@@ -27,16 +27,42 @@ print("Selected image path:", selected_image_path)
 
 if selected_image_path and os.path.exists(selected_image_path):
     try:
-        # Use PIL to open the image and then convert it to a format that Tkinter can use
+        # Use PIL to open the image
         pil_image = Image.open(selected_image_path)
+        
+        # Get the original dimensions
+        original_width, original_height = pil_image.size
+        
+        # Desired dimensions for the canvas
+        canvas_width = 800
+        canvas_height = 600
+        
+        # Calculate the aspect ratio
+        aspect_ratio = original_width / original_height
+        
+        # Determine the new dimensions while maintaining the aspect ratio
+        if canvas_width / canvas_height > aspect_ratio:
+            # Fit to height
+            new_height = canvas_height
+            new_width = int(new_height * aspect_ratio)
+        else:
+            # Fit to width
+            new_width = canvas_width
+            new_height = int(new_width / aspect_ratio)
+        
+        # Resize the image
+        pil_image = pil_image.resize((new_width, new_height), Image.ANTIALIAS)
+        
+        # Convert to PhotoImage for Tkinter
         img = ImageTk.PhotoImage(pil_image)
-        canvas.create_image(400.0, 330.0, image=img)
+        
+        # Center the image on the canvas
+        canvas.create_image((canvas_width - new_width) // 2, (canvas_height - new_height) // 2, image=img, anchor="nw")
         canvas.image = img  # Keep a reference to avoid garbage collection
     except Exception as e:
         print(f"Error loading image: {e}")
 else:
     print("Error: No selected image path found or file does not exist.")
-
 watermark_positions = [(40.0, 85.0), (700.0, 85.0), (700.0, 560.0), (40.0, 560.0), (375.0, 277.0)]
 for pos in watermark_positions:
     canvas.create_text(pos[0], pos[1], anchor="nw", text="Watermark", fill="#FFFFFF", font=("Inter", 12 * -1))
