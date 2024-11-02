@@ -39,73 +39,17 @@ class ImageGallery(tk.Tk):
         self.bind("<Configure>", self.update_label_position)
 
     def zoom(self, event):
-        # Get the mouse position on the canvas
-        mouse_x = event.x
-        mouse_y = event.y
-
-        # Calculate the current image position
-        x, y = self.canvas.coords(self.image_id)
-
-        # Calculate image boundaries
-        img_width = int(self.image.width * self.zoom_factor)
-        img_height = int(self.image.height * self.zoom_factor)
-
-        # Define the limits based on canvas size
-        canvas_width = self.canvas.winfo_width()
-        canvas_height = self.canvas.winfo_height()
-        
-        # Calculate the constraints
-        left_limit = 150
-        right_limit = canvas_width - 150
-        top_limit = 150
-        bottom_limit = canvas_height - 150
-
-        # Initialize new_x and new_y
-        new_x = x
-        new_y = y
-
-        # Determine the new zoom factor
-        if (x <= mouse_x <= x + img_width) and (y <= mouse_y <= y + img_height):
-            # Mouse is over the image
-            if event.delta > 0 or event.num == 4:  # Zoom in
-                new_zoom_factor = min(self.zoom_factor * 1.1, 2.0)  # Max zoom in to 200%
-                rel_x = mouse_x - x
-                rel_y = mouse_y - y
+        if event.delta > 0 or event.num == 4:  # Zoom in
+            new_zoom_factor = self.zoom_factor * 1.1
+            if new_zoom_factor <= 2.0:  # Allow zoom only up to 200%
                 self.zoom_factor = new_zoom_factor
-                new_x = mouse_x - (rel_x * self.zoom_factor)
-                new_y = mouse_y - (rel_y * self.zoom_factor)
-
-            elif event.delta < 0 or event.num == 5:  # Zoom out
-                new_zoom_factor = max(self.zoom_factor / 1.1, 0.5)  # Min zoom out to 50%
+        elif event.delta < 0 or event.num == 5:  # Zoom out
+            new_zoom_factor = self.zoom_factor / 1.1
+            if new_zoom_factor >= 0.5:  # Allow zoom only down to 10%
                 self.zoom_factor = new_zoom_factor
-                # Center the image on the canvas during zoom out
-                new_x = (canvas_width - img_width) // 2
-                new_y = (canvas_height - img_height) // 2
-
-        else:
-            # Mouse is outside the image: revert to center zoom
-            if event.delta > 0 or event.num == 4:  # Zoom in
-                new_zoom_factor = min(self.zoom_factor * 1.1, 2.0)  # Max zoom in to 200%
-                self.zoom_factor = new_zoom_factor
-                new_x = (canvas_width - img_width) // 2
-                new_y = (canvas_height - img_height) // 2
-
-            elif event.delta < 0 or event.num == 5:  # Zoom out
-                new_zoom_factor = max(self.zoom_factor / 1.1, 0.5)  # Min zoom out to 50%
-                self.zoom_factor = new_zoom_factor
-                new_x = (canvas_width - img_width) // 2
-                new_y = (canvas_height - img_height) // 2
-
-        # Constrain the new position
-        new_x = max(left_limit, min(new_x, right_limit - img_width))
-        new_y = max(top_limit, min(new_y, bottom_limit - img_height))
 
         # Update the image size and label
         self.update_image()
-
-        # Move the image to the new position
-        self.canvas.coords(self.image_id, new_x, new_y)
-
 
     def zoom_in(self, event):
         self.zoom(event)
