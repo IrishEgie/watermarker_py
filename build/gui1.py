@@ -19,6 +19,10 @@ def return_to_screen1():
     python = sys.executable
     os.execl(python, python, os.path.join(OUTPUT_PATH, 'gui.py'))
 
+def add_watermark():
+    if hasattr(window, 'image_gallery'):
+        window.image_gallery.add_watermark_controls()
+
 window = Tk()
 window.geometry("800x600")
 window.configure(bg="#FFFFFF")
@@ -32,8 +36,8 @@ selected_image_path = Config.selected_file_path
 if selected_image_path and os.path.exists(selected_image_path):
     try:
         # Create and place the ImageGallery instance
-        image_gallery = CustomImageGallery(window, selected_image_path)
-        image_gallery.place(x=0, y=60, width=800, height=540)  # Place below the top bar
+        window.image_gallery = CustomImageGallery(window, selected_image_path)  # Store as window attribute
+        window.image_gallery.place(x=0, y=60, width=800, height=540)  # Place below the top bar
     except Exception as e:
         print(f"Error loading image: {str(e)}")
 else:
@@ -50,7 +54,7 @@ main_canvas.create_rectangle(0.0, 0.0, 800.0, 60.0, fill="#FFFFFF", outline="")
 buttons = [
     ("button_1.png", (19.0, 19.0), 63.0, 23.0, return_to_screen1),
     ("button_2.png", (717.0, 19.0), 63.0, 23.0, lambda: print("button_2 clicked")),
-    ("button_3.png", (312.0, 19.0), 78.0, 23.0, lambda: print("button_3 clicked")),
+    ("button_3.png", (312.0, 19.0), 78.0, 23.0, add_watermark),  # Changed to add_watermark function
     ("button_4.png", (400.0, 19.0), 77.9, 23.0, lambda: print("button_4 clicked"))
 ]
 
@@ -59,8 +63,7 @@ button_images = []
 def create_button(img, pos, width, height, cmd):
     button_image = PhotoImage(file=relative_to_assets(img))
     button_images.append(button_image)
-    button = Button(window, image=button_image, borderwidth=0, highlightthickness=0,
-                   command=cmd, relief="flat")
+    button = Button(window, image=button_image, borderwidth=0, highlightthickness=0,command=cmd, relief="flat", cursor="hand2")
     button.place(x=pos[0], y=pos[1], width=width, height=height)
 
 for img, pos, width, height, command in buttons:

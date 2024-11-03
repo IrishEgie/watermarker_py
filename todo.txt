@@ -1,0 +1,16 @@
+Quality-of-Life Nitpicks
+Tooltips: Provide brief descriptions for each menu item when hovered over.
+
+Keyboard Shortcuts: Implement keyboard shortcuts for frequent actions (e.g., Ctrl+S for Save).
+
+Undo/Redo Buttons: Include easy access to undo and redo actions directly in the menu bar.
+
+Recent Files: Add a section in the File menu for quick access to recently opened images.
+
+Template Options: Allow users to save their watermark settings as templates for quick reuse.
+
+Live Preview: Instead of just a preview button, implement a live preview that updates as adjustments are made.
+
+Customizable Interface: Enable users to rearrange or hide menu items according to their preferences.
+
+Feedback Mechanism: Provide an option for users to submit feedback directly within the application for continuous improvement.
