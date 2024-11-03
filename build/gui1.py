@@ -12,6 +12,11 @@ ASSETS_PATH = OUTPUT_PATH / Path(r"/run/media/ejarao/STORAGE/4 Dev Library/2 Pyt
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
 
+def return_to_screen1():
+    window.destroy()
+    import gui  # Import and run Screen 1
+
+
 window = Tk()
 window.geometry("800x600")
 window.configure(bg="#FFFFFF")
@@ -41,12 +46,11 @@ main_canvas.create_rectangle(0.0, 0.0, 800.0, 60.0, fill="#FFFFFF", outline="")
 
 # Button creation
 buttons = [
-    ("button_1.png", (19.0, 19.0), 63.0, 23.0, "button_1 clicked"),
-    ("button_2.png", (717.0, 19.0), 63.0, 23.0, "button_2 clicked"),
-    ("button_3.png", (312.0, 19.0), 78.0, 23.0, "button_3 clicked"),
-    ("button_4.png", (400.0, 19.0), 77.9, 23.0, "button_4 clicked")
+    ("button_1.png", (19.0, 19.0), 63.0, 23.0, return_to_screen1),  # Modified to use return_to_screen1 function
+    ("button_2.png", (717.0, 19.0), 63.0, 23.0, lambda: print("button_2 clicked")),
+    ("button_3.png", (312.0, 19.0), 78.0, 23.0, lambda: print("button_3 clicked")),
+    ("button_4.png", (400.0, 19.0), 77.9, 23.0, lambda: print("button_4 clicked"))
 ]
-
 button_images = []
 
 def create_button(img, pos, width, height, cmd):
