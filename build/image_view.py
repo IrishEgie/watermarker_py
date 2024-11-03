@@ -1,6 +1,6 @@
 import tkinter as tk
 from PIL import Image, ImageTk
-from tkinter import Canvas, Label, Scale, Entry
+from tkinter import Canvas, Label, Scale, Entry, Frame
 
 class CustomImageGallery(tk.Frame):
     def __init__(self, parent, img_path):
@@ -9,7 +9,8 @@ class CustomImageGallery(tk.Frame):
         self.zoom = 1.0
         self.dragging = False
         self.dragging_watermark = False
-        self.watermark_alpha = 70  # Store as integer (0-100)
+        self.watermark_alpha = 255  # Full opacity (0-255)
+        self.watermark_color = "#000000"  # Default black
         self.has_watermark = False
 
         # Set up canvas and resize image to fit
@@ -45,30 +46,44 @@ class CustomImageGallery(tk.Frame):
     def add_watermark_controls(self):
         """Add watermark controls to the interface"""
         if not self.has_watermark:
-            # Create alpha slider
-            self.alpha_label = Label(self, text="Watermark Opacity:", bg="white")
-            self.alpha_label.place(x=30, y=460, anchor='sw')
+            # Create control panel frame
+            self.control_panel = Frame(self, bg="white", relief="raised", borderwidth=1)
+            self.control_panel.place(x=600, y=20, width=180, height=200)
             
-            self.alpha_slider = Scale(self, from_=0, to=100, orient="horizontal", 
-                                    command=self._update_watermark_alpha)
-            self.alpha_slider.set(70)  # Default alpha value (70%)
-            self.alpha_slider.place(x=150, y=460, anchor='sw')
+            # Opacity controls
+            Label(self.control_panel, text="Watermark Opacity", bg="white").pack(pady=(10,0))
+            self.alpha_slider = Scale(
+                self.control_panel,
+                from_=0,
+                to=100,
+                orient="horizontal",
+                command=self._update_watermark_alpha,
+                length=150
+            )
+            self.alpha_slider.set(100)
+            self.alpha_slider.pack(pady=(0,10))
             
-            # Create watermark text input
-            self.watermark_label = Label(self, text="Watermark Text:", bg="white")
-            self.watermark_label.place(x=30, y=480, anchor='sw')
-            
-            self.watermark_entry = Entry(self)
+            # Text input
+            Label(self.control_panel, text="Watermark Text", bg="white").pack()
+            self.watermark_entry = Entry(self.control_panel, width=20)
             self.watermark_entry.insert(0, "Watermark")
-            self.watermark_entry.place(x=150, y=480, anchor='sw', width=150)
+            self.watermark_entry.pack(pady=(0,10))
             self.watermark_entry.bind('<Return>', self._update_watermark_text)
             
-            # Create watermark text on canvas with semi-transparent black color
+            # Color input
+            Label(self.control_panel, text="Watermark Color", bg="white").pack()
+            self.color_entry = Entry(self.control_panel, width=20)
+            self.color_entry.insert(0, "#FFFFFF")  # Default white
+            self.color_entry.pack(pady=(0,10))
+            self.color_entry.bind('<Return>', self._update_watermark_color)
+            
+            # Create watermark text on canvas
             self.watermark_id = self.canvas.create_text(
-                400, 240, text=self.watermark_entry.get(),
-                fill='black',  # Use plain black, we'll simulate transparency
-                font=('Arial', 24), tags="watermark",
-                stipple='gray50'  # This creates a semi-transparent effect
+                400, 240,
+                text=self.watermark_entry.get(),
+                fill=self.color_entry.get(),
+                font=('Arial', 24),
+                tags="watermark"
             )
             
             # Bind watermark dragging events
@@ -79,20 +94,26 @@ class CustomImageGallery(tk.Frame):
             self.has_watermark = True
 
     def _update_watermark_alpha(self, value):
-        """Update watermark transparency using stipple patterns"""
-        self.watermark_alpha = int(value)
-        if self.watermark_alpha > 75:
-            stipple = ''  # Solid
-        elif self.watermark_alpha > 50:
-            stipple = 'gray75'
-        elif self.watermark_alpha > 25:
-            stipple = 'gray50'
-        else:
-            stipple = 'gray25'
-        
-        self.canvas.itemconfig(self.watermark_id, stipple=stipple)
+        """Update watermark opacity"""
+        alpha_hex = format(int(int(value) * 2.55), '02x')  # Convert 0-100 to hex alpha
+        color = self.color_entry.get()
+        if len(color) == 7:  # If color is in #RRGGBB format
+            color = color + alpha_hex
+        elif len(color) == 9:  # If color already has alpha
+            color = color[:7] + alpha_hex
+        self.canvas.itemconfig(self.watermark_id, fill=color)
+
+    def _update_watermark_color(self, event=None):
+        """Update watermark color"""
+        color = self.color_entry.get()
+        if len(color) == 7:  # If color is in #RRGGBB format
+            alpha_value = self.alpha_slider.get()
+            alpha_hex = format(int(alpha_value * 2.55), '02x')
+            color = color + alpha_hex
+        self.canvas.itemconfig(self.watermark_id, fill=color)
 
     def _update_watermark_text(self, event=None):
+        """Update watermark text"""
         self.canvas.itemconfig(self.watermark_id, text=self.watermark_entry.get())
 
     def _start_watermark_drag(self, event):
@@ -127,8 +148,8 @@ class CustomImageGallery(tk.Frame):
 
     def _stop_watermark_drag(self, event):
         self.dragging_watermark = False
-        return "break"  # Prevent event propagation
-
+        return "break"
+    
     def _handle_zoom(self, factor):
         # Update zoom and resize image if within bounds
         new_zoom = self.zoom * factor
