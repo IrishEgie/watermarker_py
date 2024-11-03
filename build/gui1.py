@@ -36,10 +36,12 @@ selected_image_path = Config.selected_file_path
 if selected_image_path and os.path.exists(selected_image_path):
     try:
         # Create and place the ImageGallery instance
-        window.image_gallery = CustomImageGallery(window, selected_image_path)  # Store as window attribute
-        window.image_gallery.place(x=0, y=60, width=800, height=540)  # Place below the top bar
+        window.image_gallery = CustomImageGallery(window, selected_image_path)
+        window.image_gallery.place(x=0, y=60, width=800, height=540)
     except Exception as e:
         print(f"Error loading image: {str(e)}")
+        import traceback
+        traceback.print_exc()  # This will help debug any issues
 else:
     print("Error: No selected image path found or file does not exist.")
 
