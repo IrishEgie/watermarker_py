@@ -9,9 +9,10 @@ class CustomImageGallery(tk.Frame):
         self.image = Image.open(img_path).convert('RGBA')
         self.zoom, self.dragging, self.dragging_watermark = 1.0, False, False
         self.watermark_alpha, self.watermark_color = 255, "#FFFFFF"
-        self.watermark_size = 24  # Initialize watermark_size here
+        self.watermark_size = 24
         self.has_watermark = False
         self.watermark_layer = None
+        self.original_image = self.image.copy()  # Store original image
         
         # Set up canvas and initial image
         self.canvas = Canvas(self, bg="black", height=480, width=800)
@@ -33,6 +34,10 @@ class CustomImageGallery(tk.Frame):
         self.font = self._get_default_font()
         
         # Bind events
+        self._bind_events()
+
+    def _bind_events(self):
+        """Bind all necessary events"""
         events = {
             "<MouseWheel>": lambda e: self._handle_zoom(1.1 if e.delta > 0 else 0.9),
             "<Button-4>": lambda e: self._handle_zoom(1.1),
@@ -45,6 +50,7 @@ class CustomImageGallery(tk.Frame):
         }
         for event, callback in events.items():
             self.canvas.bind(event, callback)
+
 
     def _get_default_font(self):
         """Try to load a system font, fallback to default if none available"""
@@ -157,8 +163,15 @@ class CustomImageGallery(tk.Frame):
         self._recreate_watermark()
 
     def add_watermark_controls(self):
+        """Add watermark controls and disable zoom"""
         if self.has_watermark:
             return
+            
+        # Reset zoom when adding watermark controls
+        self.zoom = 1.0
+        self.zoom_label.config(text="Zoom: 100%")
+        self.image = self.base_image.copy()
+        self.update_display()
             
         self.control_panel = Frame(self, bg="white", relief="raised", borderwidth=1)
         self.control_panel.place(x=20, y=20, width=180, height=300)
@@ -175,7 +188,6 @@ class CustomImageGallery(tk.Frame):
             label.pack(pady=(10 if i == 0 else 0, 0), anchor='w')
             widget = widget_class(self.control_panel, **props)
             
-            # Set initial values
             if widget_class == Scale:
                 widget.set(100)
             else:
@@ -195,7 +207,6 @@ class CustomImageGallery(tk.Frame):
             
             widget.pack(pady=(0, 10))
             
-            # Store references
             if text == "Watermark Opacity":
                 self.alpha_slider = widget
             elif text == "Font Size":
@@ -208,7 +219,7 @@ class CustomImageGallery(tk.Frame):
         self.has_watermark = True
         self.watermark_layer = Image.new('RGBA', self.image.size, (0, 0, 0, 0))
         self._update_watermark()
-
+        
     def _update_watermark(self, event=None):
         if not self.has_watermark or not self.watermark_layer:
             return
@@ -254,25 +265,50 @@ class CustomImageGallery(tk.Frame):
     def update_display(self):
         """Update the display with current image and watermark"""
         if self.watermark_layer:
-            composite = Image.alpha_composite(self.image.convert('RGBA'), self.watermark_layer)
+            # Resize watermark layer to match current image size
+            resized_watermark = self.watermark_layer.resize(self.image.size, Image.Resampling.LANCZOS)
+            composite = Image.alpha_composite(self.image.convert('RGBA'), resized_watermark)
         else:
             composite = self.image
             
         self.img_tk = ImageTk.PhotoImage(composite)
         
         if not hasattr(self, 'img_id'):
-            self.img_id = self.canvas.create_image(400, 240, image=self.img_tk, anchor='center')
+            self.img_id = self.canvas.create_image(
+                self.canvas.winfo_width() // 2,
+                self.canvas.winfo_height() // 2,
+                image=self.img_tk,
+                anchor='center'
+            )
         else:
             self.canvas.itemconfig(self.img_id, image=self.img_tk)
+            # Maintain center position
+            self.canvas.coords(
+                self.img_id,
+                self.canvas.winfo_width() // 2,
+                self.canvas.winfo_height() // 2
+            )
+
 
 
     def _handle_zoom(self, factor):
+        """Handle zoom with proper image scaling"""
+        if self.has_watermark:
+            return  # Disable zoom when control panel is open
+            
         new_zoom = self.zoom * factor
         if 0.5 <= new_zoom <= 2.0:
             self.zoom = new_zoom
             self.zoom_label.config(text=f"Zoom: {int(self.zoom * 100)}%")
+            
+            # Calculate new image size based on zoom
+            new_width = int(self.base_image.width * self.zoom)
+            new_height = int(self.base_image.height * self.zoom)
+            
+            # Resize the image
+            self.image = self.base_image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+            
             self.update_display()
-            self.canvas.coords(self.img_id, self.canvas.winfo_width() // 2, self.canvas.winfo_height() // 2)
 
     def _start_drag(self, event):
         self.prev_x, self.prev_y = event.x, event.y
