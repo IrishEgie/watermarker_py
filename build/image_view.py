@@ -14,7 +14,7 @@ class CustomImageGallery(tk.Frame):
         self.watermark_layer = None
         
         # Set up canvas and initial image
-        self.canvas = Canvas(self, bg="white", height=480, width=800)
+        self.canvas = Canvas(self, bg="black", height=480, width=800)
         self.canvas.pack(fill=tk.BOTH, expand=True)
         
         # Calculate initial image size
@@ -252,12 +252,19 @@ class CustomImageGallery(tk.Frame):
         self.update_display()
 
     def update_display(self):
-        composite = Image.alpha_composite(self.image.convert('RGBA'), self.watermark_layer) if self.watermark_layer else self.image
+        """Update the display with current image and watermark"""
+        if self.watermark_layer:
+            composite = Image.alpha_composite(self.image.convert('RGBA'), self.watermark_layer)
+        else:
+            composite = self.image
+            
         self.img_tk = ImageTk.PhotoImage(composite)
+        
         if not hasattr(self, 'img_id'):
             self.img_id = self.canvas.create_image(400, 240, image=self.img_tk, anchor='center')
         else:
             self.canvas.itemconfig(self.img_id, image=self.img_tk)
+
 
     def _handle_zoom(self, factor):
         new_zoom = self.zoom * factor
