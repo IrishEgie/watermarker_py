@@ -45,11 +45,6 @@ if selected_image_path and os.path.exists(selected_image_path):
 else:
     print("Error: No selected image path found or file does not exist.")
 
-# Create watermark positions on the main canvas
-watermark_positions = [(40.0, 85.0), (700.0, 85.0), (700.0, 560.0), (40.0, 560.0), (375.0, 277.0)]
-for pos in watermark_positions:
-    main_canvas.create_text(pos[0], pos[1], anchor="nw", text="Watermark", fill="#FFFFFF", font=("Inter", 12 * -1))
-
 main_canvas.create_rectangle(0.0, 0.0, 800.0, 60.0, fill="#FFFFFF", outline="")
 
 # Button creation
