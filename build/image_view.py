@@ -9,13 +9,14 @@ class CustomImageGallery(tk.Frame):
         self.image = Image.open(img_path).convert('RGBA')
         self.zoom, self.dragging, self.dragging_watermark = 1.0, False, False
         self.watermark_alpha, self.watermark_color = 255, "#FFFFFF"
-        self.watermark_size = 24
+        self.watermark_size = 36
         self.has_watermark = False
         self.watermark_layer = None
-        self.original_image = self.image.copy()  # Store original image
+        self.original_image = self.image.copy()
+        self.control_panel_dragging = False  # New variable for control panel dragging
         
         # Set up canvas and initial image
-        self.canvas = Canvas(self, bg="black", height=480, width=800)
+        self.canvas = Canvas(self, bg="#2b2b2b", height=480, width=800)
         self.canvas.pack(fill=tk.BOTH, expand=True)
         
         # Calculate initial image size
@@ -26,6 +27,10 @@ class CustomImageGallery(tk.Frame):
         self.image = self.base_image.copy()
         self.watermark_x, self.watermark_y = self.image.width // 2, self.image.height // 2
         
+        # Initialize the image position at the center
+        self.canvas_center_x = self.canvas.winfo_reqwidth() // 2
+        self.canvas_center_y = self.canvas.winfo_reqheight() // 2
+        
         self.update_display()
         self.zoom_label = Label(self, text="Zoom: 100%", bg="white")
         self.zoom_label.place(x=30, y=500, anchor='sw')
@@ -35,6 +40,16 @@ class CustomImageGallery(tk.Frame):
         
         # Bind events
         self._bind_events()
+        
+        # Bind canvas resize event to keep image centered
+        self.canvas.bind('<Configure>', self._on_canvas_resize)
+
+    def _on_canvas_resize(self, event):
+        """Handle canvas resize to keep image centered"""
+        if hasattr(self, 'img_id'):
+            self.canvas_center_x = event.width // 2
+            self.canvas_center_y = event.height // 2
+            self.canvas.coords(self.img_id, self.canvas_center_x, self.canvas_center_y)
 
     def _bind_events(self):
         """Bind all necessary events"""
@@ -176,6 +191,17 @@ class CustomImageGallery(tk.Frame):
         self.control_panel = Frame(self, bg="white", relief="raised", borderwidth=1)
         self.control_panel.place(x=20, y=20, width=180, height=300)
         
+        # Add a "handle" for dragging at the top of the control panel
+        handle = Frame(self.control_panel, bg="lightgray", height=20)
+        handle.pack(fill='x', side='top')
+        handle.bind('<Button-1>', self._start_control_panel_drag)
+        handle.bind('<B1-Motion>', self._handle_control_panel_drag)
+        handle.bind('<ButtonRelease-1>', self._stop_control_panel_drag)
+        
+        # Make handle look clickable
+        handle.bind('<Enter>', lambda e: handle.config(cursor="hand2"))
+        handle.bind('<Leave>', lambda e: handle.config(cursor="arrow"))
+        
         controls = [
             ("Watermark Opacity", Scale, {"from_": 0, "to": 100, "orient": "horizontal", "command": self._update_watermark, "length": 150}),
             ("Font Size", Entry, {"width": 20}),
@@ -219,7 +245,33 @@ class CustomImageGallery(tk.Frame):
         self.has_watermark = True
         self.watermark_layer = Image.new('RGBA', self.image.size, (0, 0, 0, 0))
         self._update_watermark()
-        
+
+    def _start_control_panel_drag(self, event):
+        """Start dragging the control panel"""
+        self.control_panel_dragging = True
+        widget = event.widget
+        widget._drag_start_x = event.x
+        widget._drag_start_y = event.y
+
+    def _handle_control_panel_drag(self, event):
+        """Handle control panel dragging"""
+        if self.control_panel_dragging:
+            widget = event.widget
+            x = self.control_panel.winfo_x() + (event.x - widget._drag_start_x)
+            y = self.control_panel.winfo_y() + (event.y - widget._drag_start_y)
+            
+            # Keep the control panel within the window bounds
+            max_x = self.winfo_width() - self.control_panel.winfo_width()
+            max_y = self.winfo_height() - self.control_panel.winfo_height()
+            x = max(0, min(x, max_x))
+            y = max(0, min(y, max_y))
+            
+            self.control_panel.place(x=x, y=y)
+
+    def _stop_control_panel_drag(self, event):
+        """Stop dragging the control panel"""
+        self.control_panel_dragging = False
+
     def _update_watermark(self, event=None):
         if not self.has_watermark or not self.watermark_layer:
             return
@@ -274,22 +326,15 @@ class CustomImageGallery(tk.Frame):
         self.img_tk = ImageTk.PhotoImage(composite)
         
         if not hasattr(self, 'img_id'):
+            # Initialize image at the center of the canvas
             self.img_id = self.canvas.create_image(
-                self.canvas.winfo_width() // 2,
-                self.canvas.winfo_height() // 2,
+                self.canvas.winfo_reqwidth() // 2,
+                self.canvas.winfo_reqheight() // 2,
                 image=self.img_tk,
                 anchor='center'
             )
         else:
             self.canvas.itemconfig(self.img_id, image=self.img_tk)
-            # Maintain center position
-            self.canvas.coords(
-                self.img_id,
-                self.canvas.winfo_width() // 2,
-                self.canvas.winfo_height() // 2
-            )
-
-
 
     def _handle_zoom(self, factor):
         """Handle zoom with proper image scaling"""
