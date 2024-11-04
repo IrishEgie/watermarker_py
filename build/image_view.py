@@ -66,7 +66,7 @@ class CustomImageGallery(tk.Frame):
             return None
 
     def _validate_font_size(self, event=None):
-        """Validate font size input to ensure it's a positive number"""
+        """Validate font size input and update watermark"""
         try:
             current = self.size_entry.get().strip()
             if current == "":
@@ -74,81 +74,87 @@ class CustomImageGallery(tk.Frame):
                 
             size = int(current)
             print(f"Validating font size: {size}")
+            old_size = self.watermark_size
             
+            # Update size within bounds
             if 12 <= size <= 72:
                 self.watermark_size = size
-                print(f"Setting new watermark size to: {self.watermark_size}")
             elif size < 12:
                 self.watermark_size = 12
                 self.size_entry.delete(0, tk.END)
                 self.size_entry.insert(0, "12")
-                print("Size too small, setting to 12")
             elif size > 72:
                 self.watermark_size = 72
                 self.size_entry.delete(0, tk.END)
                 self.size_entry.insert(0, "72")
-                print("Size too large, setting to 72")
             
-            # Update the watermark with the new size
-            self._update_watermark()
+            print(f"Size changed from {old_size} to {self.watermark_size}")
+            
+            # Force watermark redraw
+            self._recreate_watermark()
                 
         except ValueError as e:
             print(f"Value error in font size validation: {e}")
-            # If conversion fails, revert to previous valid value
             self.size_entry.delete(0, tk.END)
             self.size_entry.insert(0, str(self.watermark_size))
             
-    def _update_watermark(self, event=None):
-        """Update the watermark with current settings"""
-        if not self.has_watermark or not self.watermark_layer:
+    def _recreate_watermark(self):
+        """Completely recreate the watermark layer with current settings"""
+        if not self.has_watermark:
             return
             
-        print(f"Updating watermark with size: {self.watermark_size}")
+        print(f"Recreating watermark with size: {self.watermark_size}")
             
+        # Create fresh watermark layer
         self.watermark_layer = Image.new('RGBA', self.image.size, (0, 0, 0, 0))
         draw = ImageDraw.Draw(self.watermark_layer)
         
-        # Get current watermark parameters
+        # Get current parameters
         text = self.watermark_entry.get()
         color = self.color_entry.get()
         alpha = int(self.alpha_slider.get() * 2.55)
-        
-        # Calculate scaled size
         scaled_size = int(self.watermark_size * self.zoom)
-        print(f"Scaled font size: {scaled_size} (base: {self.watermark_size}, zoom: {self.zoom}")
         
-        # Process color with alpha
+        print(f"Drawing text with scaled size: {scaled_size}")
+        
+        # Process color
         if len(color) == 7:
             r, g, b = int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16)
             color = (r, g, b, alpha)
         
-        # Load font with scaled size
+        # Load font
         try:
             if self.font:
-                print(f"Loading font from path: {self.font} with size: {scaled_size}")
                 font = ImageFont.truetype(self.font, scaled_size)
+                print(f"Loaded font: {self.font} at size {scaled_size}")
             else:
-                print("Using default font")
                 font = ImageFont.load_default()
+                print("Using default font")
         except Exception as e:
-            print(f"Font loading error: {e}")
+            print(f"Font error: {e}")
             font = ImageFont.load_default()
         
-        # Calculate text boundaries
+        # Calculate text position
         text_bbox = draw.textbbox((0, 0), text, font=font)
         text_width = text_bbox[2] - text_bbox[0]
         text_height = text_bbox[3] - text_bbox[1]
         
-        # Calculate position
         screen_x = int(self.watermark_x * self.zoom)
         screen_y = int(self.watermark_y * self.zoom)
         
         x = max(0, min(screen_x - text_width // 2, self.image.width - text_width))
         y = max(0, min(screen_y - text_height // 2, self.image.height - text_height))
         
-        # Draw text
+        # Draw watermark
         draw.text((x, y), text, font=font, fill=color)
+        print(f"Drew text at position ({x}, {y})")
+        
+        # Update display
         self.update_display()
+
+    def _update_watermark(self, event=None):
+        """Update watermark in response to changes"""
+        self._recreate_watermark()
 
     def add_watermark_controls(self):
         if self.has_watermark:
