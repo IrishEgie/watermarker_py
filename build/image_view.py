@@ -1,7 +1,12 @@
+from pathlib import Path
+import sys
 import tkinter as tk
+from tkinter import messagebox
+from tkinter import filedialog
 from PIL import Image, ImageTk, ImageDraw, ImageFont
 from tkinter import Canvas, Label, Scale, Entry, Frame
 import os
+from config import Config
 
 class CustomImageGallery(tk.Frame):
     def __init__(self, parent, img_path):
@@ -177,19 +182,75 @@ class CustomImageGallery(tk.Frame):
         """Update watermark in response to changes"""
         self._recreate_watermark()
 
+    def save_watermarked_image(self):
+        """Save the watermarked image to a user-selected location"""
+        if not self.has_watermark:
+            messagebox.showwarning("No Watermark", "Please add a watermark before saving.")
+            return
+
+        # Set initial directory to the Pictures library
+        initial_dir = (
+            os.path.join(os.environ['USERPROFILE'], 'Pictures') if sys.platform.startswith('win') 
+            else os.path.expanduser('~/Pictures')
+        )
+
+        # Open file dialog
+        file_path = filedialog.asksaveasfilename(
+            initialdir=initial_dir,
+            title="Save Watermarked Image",
+            filetypes=[
+                ("PNG files", "*.png"),
+                ("JPEG files", "*.jpg;*.jpeg"),
+                ("All files", "*.*")
+            ],
+            defaultextension=".png"
+        )
+
+        if file_path:
+            try:
+                # Update the last save path in config
+                Config.last_save_path = str(Path(file_path).parent)
+
+                # Create the final composite image
+                if self.watermark_layer:
+                    # Create a new composite at original size
+                    base_img = self.base_image.copy()
+                    watermark = self.watermark_layer.resize(
+                        base_img.size, 
+                        Image.Resampling.LANCZOS
+                    )
+                    final_image = Image.alpha_composite(
+                        base_img.convert('RGBA'), 
+                        watermark
+                    )
+                else:
+                    final_image = self.base_image
+
+                # Save the image
+                final_image.save(file_path)
+                messagebox.showinfo(
+                    "Success", 
+                    f"Image saved successfully to:\n{file_path}"
+                )
+            except Exception as e:
+                messagebox.showerror(
+                    "Error",
+                    f"Failed to save image:\n{str(e)}"
+                )
+
     def add_watermark_controls(self):
-        """Add watermark controls and disable zoom"""
+        """Modified version of add_watermark_controls to include save button"""
         if self.has_watermark:
             return
-            
+                
         # Reset zoom when adding watermark controls
         self.zoom = 1.0
         self.zoom_label.config(text="Zoom: 100%")
         self.image = self.base_image.copy()
         self.update_display()
-            
+                
         self.control_panel = Frame(self, bg="white", relief="raised", borderwidth=1)
-        self.control_panel.place(x=20, y=20, width=180, height=300)
+        self.control_panel.place(x=20, y=20, width=180, height=340)  # Increased height for save button
         
         # Add a "handle" for dragging at the top of the control panel
         handle = Frame(self.control_panel, bg="lightgray", height=20)
@@ -242,10 +303,22 @@ class CustomImageGallery(tk.Frame):
             elif text == "Watermark Color":
                 self.color_entry = widget
         
+        # Add Save button at the bottom of control panel
+        save_button = tk.Button(
+            self.control_panel,
+            text="Save Image",
+            command=self.save_watermarked_image,
+            bg="#4CAF50",
+            fg="white",
+            relief="raised",
+            pady=5
+        )
+        save_button.pack(pady=(0, 10), padx=10, fill='x')
+        
         self.has_watermark = True
         self.watermark_layer = Image.new('RGBA', self.image.size, (0, 0, 0, 0))
         self._update_watermark()
-
+    
     def _start_control_panel_drag(self, event):
         """Start dragging the control panel"""
         self.control_panel_dragging = True
