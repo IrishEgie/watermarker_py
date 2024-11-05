@@ -44,12 +44,12 @@ class WatermarkControls:
         handle.bind('<ButtonRelease-1>', self.watermark_handler._stop_control_panel_drag)
 
         controls = [
-            ("Watermark Opacity", Scale, {"from_": 0, "to": 100, "orient": "horizontal", "command": self.watermark_handler._update_watermark, "length": 150}),
-            ("Font Size", Entry, {"width": 20}),
-            ("Watermark Text", Entry, {"width": 20}),
-            ("Watermark Color", Entry, {"width": 20})
+            ("Watermark Opacity", Scale, {"from_": 0, "to": 100, "orient": "horizontal", "command": self.watermark_handler._update_watermark, "length": 150, "bg": "white", "troughcolor": "#f0f0f0", "highlightbackground": "white", "highlightcolor": "white"}),
+            ("Font Size", Entry, {"width": 20, "bg": "white", "fg": "black"}),
+            ("Watermark Text", Entry, {"width": 20, "bg": "white", "fg": "black"}),
+            ("Watermark Color", Entry, {"width": 20, "bg": "white", "fg": "black"})
         ]
-        
+
         for i, (text, widget_class, props) in enumerate(controls):
             label = Label(self.watermark_handler.control_panel, text=text, bg="white", anchor='w', width=20)
             label.pack(pady=(10 if i == 0 else 0, 0), anchor='w')
@@ -65,12 +65,14 @@ class WatermarkControls:
                 }.get(text, "")
                 widget.insert(0, initial_value)
                 
+                # In watermark_controls.py
                 if text == "Font Size":
-                    widget.bind('<Return>', self.watermark_handler._validate_font_size)
-                    widget.bind('<FocusOut>', self.watermark_handler._validate_font_size)
+                    widget.bind('<Return>', self.watermark_handler._update_watermark)
+                    widget.bind('<FocusOut>', self.watermark_handler._update_watermark)
                 else:
                     widget.bind('<Return>', self.watermark_handler._update_watermark)
                     widget.bind('<FocusOut>', self.watermark_handler._update_watermark)
+
             
             widget.pack(pady=(0, 10))
             

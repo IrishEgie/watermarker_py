@@ -22,85 +22,92 @@ class WatermarkHandler(CustomImageGallery):
         self.control_panel = None
         self.has_watermark = False
         self.watermark_layer = None
+        self.base_watermark_size = 36  # Store the base size separately
+        self.watermark_size = 36  # This will be the scaled size
 
     def _recreate_watermark(self):
         """Recreate watermark with current settings"""
         if not self.has_watermark:
             return
             
-        print(f"Recreating watermark with size: {self.watermark_size}")
-            
-        # Create fresh watermark layer
-        self.watermark_layer = Image.new('RGBA', self.image.size, (0, 0, 0, 0))
-        draw = ImageDraw.Draw(self.watermark_layer)
+        # Create fresh watermark layer at the base image size
+        base_layer = Image.new('RGBA', self.base_image.size, (0, 0, 0, 0))
+        draw = ImageDraw.Draw(base_layer)
         
         # Get current parameters
         text = self.watermark_entry.get()
         color = self.color_entry.get()
         alpha = int(self.alpha_slider.get() * 2.55)
-        scaled_size = int(self.watermark_size * self.zoom)
         
-        print(f"Drawing text with scaled size: {scaled_size}")
+        # Use the base watermark size for initial drawing
+        try:
+            size_input = int(self.size_entry.get())
+            self.base_watermark_size = max(12, min(72, size_input))
+        except (ValueError, AttributeError):
+            pass
         
         # Process color
         if len(color) == 7:
             r, g, b = int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16)
             color = (r, g, b, alpha)
         
-        # Load font
+        # Load font at base size
         try:
             if self.font:
-                font = ImageFont.truetype(self.font, scaled_size)
-                print(f"Loaded font: {self.font} at size {scaled_size}")
+                font = ImageFont.truetype(self.font, self.base_watermark_size)
             else:
                 font = ImageFont.load_default()
-                print("Using default font")
         except Exception as e:
             print(f"Font error: {e}")
             font = ImageFont.load_default()
         
-        # Calculate text position
+        # Calculate text position in base image coordinates
         text_bbox = draw.textbbox((0, 0), text, font=font)
         text_width = text_bbox[2] - text_bbox[0]
         text_height = text_bbox[3] - text_bbox[1]
         
-        screen_x = int(self.watermark_x * self.zoom)
-        screen_y = int(self.watermark_y * self.zoom)
+        # Convert watermark position to base image coordinates
+        base_x = self.watermark_x
+        base_y = self.watermark_y
         
-        x = max(0, min(screen_x - text_width // 2, self.image.width - text_width))
-        y = max(0, min(screen_y - text_height // 2, self.image.height - text_height))
+        x = max(0, min(base_x - text_width // 2, self.base_image.width - text_width))
+        y = max(0, min(base_y - text_height // 2, self.base_image.height - text_height))
         
-        # Draw watermark
+        # Draw watermark on base layer
         draw.text((x, y), text, font=font, fill=color)
-        print(f"Drew text at position ({x}, {y})")
         
-        # Update display
+        # Resize watermark layer to match current zoom level
+        if self.zoom != 1.0:
+            new_width = int(self.base_image.width * self.zoom)
+            new_height = int(self.base_image.height * self.zoom)
+            self.watermark_layer = base_layer.resize((new_width, new_height), Image.Resampling.LANCZOS)
+        else:
+            self.watermark_layer = base_layer
+        
+        # Update display to show the new watermark size
         self.update_display()
 
+    # In watermark_handler.py
     def _validate_font_size(self, event=None):
         """Validate font size input and update watermark"""
         try:
             current = self.size_entry.get().strip()
             if current == "":
                 return
-                    
+
             size = int(current)
-            print(f"Validating font size: {size}")
-            old_size = self.watermark_size
             
-            # Update size within bounds
+            # Update base size within bounds
             if 12 <= size <= 72:
-                self.watermark_size = size
+                self.base_watermark_size = size
             elif size < 12:
-                self.watermark_size = 12
+                self.base_watermark_size = 12
                 self.size_entry.delete(0, tk.END)
                 self.size_entry.insert(0, "12")
             elif size > 72:
-                self.watermark_size = 72
+                self.base_watermark_size = 72
                 self.size_entry.delete(0, tk.END)
                 self.size_entry.insert(0, "72")
-            
-            print(f"Size changed from {old_size} to {self.watermark_size}")
             
             # Force watermark redraw
             self._recreate_watermark()
@@ -108,7 +115,7 @@ class WatermarkHandler(CustomImageGallery):
         except ValueError as e:
             print(f"Value error in font size validation: {e}")
             self.size_entry.delete(0, tk.END)
-            self.size_entry.insert(0, str(self.watermark_size))
+            self.size_entry.insert(0, str(self.base_watermark_size))
 
 
     def _update_watermark(self, event=None):
