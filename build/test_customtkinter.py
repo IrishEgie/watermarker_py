@@ -40,8 +40,20 @@ def open_screen_2():
     window.destroy()
     import gui1  # Import and run Screen 2
 
-# Initialize main window for the application with dark theme
-ctk.set_appearance_mode("auto")
+# Function to manually adjust the text color based on appearance mode (light or dark)
+def update_label_colors(appearance_mode):
+    if appearance_mode == "dark":
+        return "white", "white", "gray"  # Dark mode colors
+    else:
+        return "black", "black", "gray"  # Light mode colors
+
+# Manually set appearance mode, you can toggle this between "dark" and "light"
+appearance_mode = "light"  # Change to "light" to test the light mode
+
+# Set the color theme based on appearance mode
+ctk.set_appearance_mode(appearance_mode)  # Use "dark" or "light" manually
+
+# Set the default theme
 ctk.set_default_color_theme("green")  # You can change the theme to your preference
 
 window = TkinterDnD.Tk()
@@ -52,20 +64,23 @@ window.title("Watermark Tool")
 frame = ctk.CTkFrame(window, width=800, height=600)
 frame.place(x=0, y=0)
 
+# Get label colors based on the manually set appearance mode
+title_color, subtitle_color, footer_color = update_label_colors(appearance_mode)
+
 # Label to replace "Add Watermark" text
-title_label = ctk.CTkLabel(frame, text="Add Watermark", font=("Inter Bold", 36), text_color="white")
+title_label = ctk.CTkLabel(frame, text="Add Watermark", font=("Inter Bold", 36), text_color=title_color)
 title_label.place(x=265.0, y=225.0)
 
 # Subtitle text
-subtitle_label = ctk.CTkLabel(frame, text="or drag your files here", font=("Inter", 12), text_color="white")
+subtitle_label = ctk.CTkLabel(frame, text="or drag your files here", font=("Inter", 12), text_color=subtitle_color)
 subtitle_label.place(x=335.0, y=355.0)
 
 # Button to select files using CTkButton (replaces the old button with an image)
-select_button = ctk.CTkButton(frame, text="Select File", width=305, height=60, command=select_file)
+select_button = ctk.CTkButton(frame, text="Select File", width=305, height=60, text_color=subtitle_color,command=select_file)
 select_button.place(x=246.0, y=278.0)
 
 # Footer text
-footer_label = ctk.CTkLabel(frame, text="Files stay private. The program processes the files on the device.", font=("Inter", 12), text_color="gray")
+footer_label = ctk.CTkLabel(frame, text="Files stay private. The program processes the files on the device.", font=("Inter", 12), text_color=footer_color)
 footer_label.place(x=215.0, y=455.0)
 
 # Enable drag-and-drop on the window
