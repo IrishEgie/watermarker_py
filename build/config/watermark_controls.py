@@ -1,4 +1,3 @@
-# watermark_controls.py
 import tkinter as tk
 from tkinter import Image, Label, Scale, Entry, Frame
 from config.watermark_handler import WatermarkHandler
@@ -21,8 +20,25 @@ class WatermarkControls:
         self.watermark_handler.control_panel = Frame(self.watermark_handler, bg="white", relief="raised", borderwidth=1)
         self.watermark_handler.control_panel.place(x=20, y=20, width=180, height=340)
         
+        # Modify the handle frame to have 'whitesmoke' background color
         handle = Frame(self.watermark_handler.control_panel, bg="lightgray", height=20)
         handle.pack(fill='x', side='top')
+
+        # Add the Close Button to the top-right corner of the handle frame
+        close_button = tk.Button(handle,
+            text="X",
+            command=self.close_control_panel,
+            bg="lightgray",  # Dark gray background for the close button
+            fg="black", 
+            relief="flat",  # Flat button style
+            height=0, 
+            width=0,
+            bd=0  # Remove border to make it look cleaner
+        )
+        close_button.pack(side='right')  # Align the button to the right side of the handle frame
+        
+        handle.bind("<Enter>", lambda e: handle.config(cursor="hand2"))  # Change cursor to hand when hovering over the control panel handle
+        handle.bind("<Leave>", lambda e: handle.config(cursor="arrow"))  # Restore default cursor
         handle.bind('<Button-1>', self.watermark_handler._start_control_panel_drag)
         handle.bind('<B1-Motion>', self.watermark_handler._handle_control_panel_drag)
         handle.bind('<ButtonRelease-1>', self.watermark_handler._stop_control_panel_drag)
@@ -77,7 +93,13 @@ class WatermarkControls:
             pady=5
         )
         save_button.pack(pady=(0, 10), padx=10, fill='x')
-        
+
         self.watermark_handler.has_watermark = True
         self.watermark_handler.watermark_layer = Image.new('RGBA', self.watermark_handler.image.size, (0, 0, 0, 0))
         self.watermark_handler._update_watermark()
+
+    def close_control_panel(self):
+        """Method to close/hide the control panel"""
+        if self.watermark_handler.control_panel:
+            self.watermark_handler.control_panel.place_forget()
+            self.watermark_handler.has_watermark = False

@@ -6,7 +6,6 @@ import tkinter as tk
 from tkinter import messagebox
 from tkinter import filedialog
 from PIL import Image, ImageDraw, ImageFont
-from tkinter import Label, Scale, Entry, Frame
 import os
 from config.config import Config
 
