@@ -2,7 +2,7 @@ from pathlib import Path
 from tkinter import Tk, Canvas, Button, PhotoImage
 import os
 from config.config import Config
-from custom_image_gallery import CustomImageGallery
+from config.watermark_handler import WatermarkHandler  # Import WatermarkHandler
 import sys
 
 OUTPUT_PATH = Path(__file__).parent
@@ -18,8 +18,8 @@ def return_to_screen1():
     os.execl(python, python, os.path.join(OUTPUT_PATH, 'gui.py'))
 
 def add_watermark():
-    if hasattr(window, 'image_gallery'):
-        window.image_gallery.add_watermark_controls()
+    if hasattr(window, 'watermark_handler'):
+        window.watermark_handler.add_watermark_controls()
 
 window = Tk()
 window.geometry("800x600")
@@ -34,9 +34,9 @@ selected_image_path = Config.selected_file_path
 
 if selected_image_path and os.path.exists(selected_image_path):
     try:
-        # Create and place the ImageGallery instance
-        window.image_gallery = CustomImageGallery(window, selected_image_path)
-        window.image_gallery.place(x=0, y=60, width=800, height=540)
+        # Create and place the WatermarkHandler instance instead of CustomImageGallery
+        window.watermark_handler = WatermarkHandler(window, selected_image_path)
+        window.watermark_handler.place(x=0, y=60, width=800, height=540)
     except Exception as e:
         print(f"Error loading image: {str(e)}")
         import traceback
