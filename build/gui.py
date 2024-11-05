@@ -1,3 +1,4 @@
+#gui.py
 from pathlib import Path
 from tkinter import Tk, Canvas, Button, PhotoImage, filedialog, messagebox
 from tkinterdnd2 import DND_FILES, TkinterDnD

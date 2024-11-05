@@ -1,9 +1,11 @@
+# gui1.py
 from pathlib import Path
 from tkinter import Tk, Canvas, Button, PhotoImage
 import os
-from config.config import Config
-from config.watermark_handler import WatermarkHandler  # Import WatermarkHandler
 import sys
+from config.config import Config
+from config.watermark_handler import WatermarkHandler
+from config.watermark_controls import WatermarkControls
 
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"/run/media/ejarao/STORAGE/4 Dev Library/2 Python/watermarker_py/build/assets/frame1")
@@ -19,7 +21,8 @@ def return_to_screen1():
 
 def add_watermark():
     if hasattr(window, 'watermark_handler'):
-        window.watermark_handler.add_watermark_controls()
+        # Use watermark_controls to add watermark controls
+        window.watermark_controls.add_watermark_controls()
 
 window = Tk()
 window.geometry("800x600")
@@ -34,9 +37,12 @@ selected_image_path = Config.selected_file_path
 
 if selected_image_path and os.path.exists(selected_image_path):
     try:
-        # Create and place the WatermarkHandler instance instead of CustomImageGallery
+        # Initialize WatermarkHandler and place it in the window
         window.watermark_handler = WatermarkHandler(window, selected_image_path)
         window.watermark_handler.place(x=0, y=60, width=800, height=540)
+        
+        # Initialize WatermarkControls with the watermark handler
+        window.watermark_controls = WatermarkControls(window.watermark_handler)
     except Exception as e:
         print(f"Error loading image: {str(e)}")
         import traceback

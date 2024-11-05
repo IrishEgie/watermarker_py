@@ -1,13 +1,8 @@
 # Section 1: Initialization & Configuration, Canvas & Image Display, Zooming & Dragging
-from pathlib import Path
-import sys
 import tkinter as tk
-from tkinter import messagebox
-from tkinter import filedialog
-from PIL import Image, ImageTk, ImageDraw, ImageFont
-from tkinter import Canvas, Label, Scale, Entry, Frame
+from PIL import Image, ImageTk
+from tkinter import Canvas, Label
 import os
-from config.config import Config
 
 class CustomImageGallery(tk.Frame):
     def __init__(self, parent, img_path):
