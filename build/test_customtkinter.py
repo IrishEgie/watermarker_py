@@ -1,12 +1,12 @@
-import customtkinter as ctk
-from pathlib import Path
-from tkinter import filedialog, messagebox
-from tkinterdnd2 import TkinterDnD, DND_FILES
 import os
 import sys
+from pathlib import Path
+import customtkinter as ctk
+from tkinter import filedialog, messagebox
+from tkinterdnd2 import DND_FILES, TkinterDnD
 from config.config import Config  # Import the Config class
-from PIL import Image, ImageTk  # Import PIL.Image and ImageTk to handle images
 
+# Set up the output and asset paths
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"/run/media/ejarao/STORAGE/4 Dev Library/1 Src/build/assets/frame0")
 
@@ -40,53 +40,40 @@ def open_screen_2():
     window.destroy()
     import gui1  # Import and run Screen 2
 
-# Initialize main window for the application
+# Initialize main window for the application with dark theme
+ctk.set_appearance_mode("auto")
+ctk.set_default_color_theme("green")  # You can change the theme to your preference
+
 window = TkinterDnD.Tk()
 window.geometry("800x600")
-# Set the title
-window.title("Watermarking Tool")
+window.title("Watermark Tool")
 
-# Set appearance mode to system default (auto will adjust to the system's theme)
-ctk.set_appearance_mode("auto")
+# Create a dark themed canvas-like container using CTkFrame
+frame = ctk.CTkFrame(window, width=800, height=600)
+frame.place(x=0, y=0)
 
-# Load the background image using PIL and convert it to PhotoImage for Tkinter
-image_path = relative_to_assets("image_1.png")
-pil_image = Image.open(image_path)  # Open the image using PIL
-background_image = ImageTk.PhotoImage(pil_image)  # Convert to PhotoImage for Tkinter
-# Store the image in a global variable to prevent garbage collection
-window.background_image = background_image  # Persist the image object
+# Label to replace "Add Watermark" text
+title_label = ctk.CTkLabel(frame, text="Add Watermark", font=("Inter Bold", 36), text_color="white")
+title_label.place(x=265.0, y=225.0)
 
-# Create a Canvas widget for background and positioning
-canvas = ctk.CTkCanvas(window, height=600, width=800, bd=0, highlightthickness=0, relief="ridge")
-canvas.pack(fill="both", expand=True)
+# Subtitle text
+subtitle_label = ctk.CTkLabel(frame, text="or drag your files here", font=("Inter", 12), text_color="white")
+subtitle_label.place(x=335.0, y=355.0)
 
-# Set the background image on the canvas, ensuring it is centered
-canvas.create_image(400, 300, anchor="center", image=window.background_image)
+# Button to select files using CTkButton (replaces the old button with an image)
+select_button = ctk.CTkButton(frame, text="Select File", width=305, height=60, command=select_file)
+select_button.place(x=246.0, y=278.0)
 
-# Add background image and texts
-canvas.create_text(265.0, 225.0, anchor="nw", text="Add Watermark", fill="#000000", font=("Inter Bold", 36 * -1))
-canvas.create_text(335.0, 355.0, anchor="nw", text="or drag your files here", fill="#000000", font=("Inter", 12 * -1))
-
-button_1 = ctk.CTkButton(
-    window,
-    text="Select Image File",
-    height=60,
-    width=305,
-    font=("Inter", 14),
-    command=select_file,
-    fg_color="#FFD700",  # Yellow background
-    hover_color="#FFCC00",  # Slightly darker yellow when hovering
-    text_color="black"  # Black text color
-)
-
-button_1.place(x=246.0, y=278.0)
 # Footer text
-canvas.create_text(215.0, 455.0, anchor="nw", text="Files stay private. The program processes the files on the device.", fill="#575757", font=("Inter", 12 * -1))
+footer_label = ctk.CTkLabel(frame, text="Files stay private. The program processes the files on the device.", font=("Inter", 12), text_color="gray")
+footer_label.place(x=215.0, y=455.0)
 
 # Enable drag-and-drop on the window
 window.drop_target_register(DND_FILES)
 window.dnd_bind('<<Drop>>', on_drop)
 
-# Run the application
+# Make the window non-resizable
 window.resizable(False, False)
+
+# Start the tkinter main loop
 window.mainloop()
