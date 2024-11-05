@@ -1,35 +1,42 @@
-# gui1.py
-from pathlib import Path
-from tkinter import Tk, Canvas, Button, PhotoImage
 import os
 import sys
+from pathlib import Path
+import customtkinter as ctk
 from config.config import Config
 from config.watermark_handler import WatermarkHandler
 from config.watermark_controls import WatermarkControls
+from gui import WatermarkApp
 
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"/run/media/ejarao/STORAGE/4 Dev Library/2 Python/watermarker_py/build/assets/frame1")
+BG_COLOR_DARK = '#2b2b2b'
+BG_COLOR_LIGHT = '#FFFFFF'
+
+def get_dynamic_bg_color():
+    if Config.appearance_mode == 'dark':
+        return BG_COLOR_DARK
+    else:
+        return BG_COLOR_LIGHT
 
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
 
 def return_to_screen1():
     window.destroy()
-    # Instead of importing, restart the application
+    # Restart the application by running the initial gui.py
     python = sys.executable
     os.execl(python, python, os.path.join(OUTPUT_PATH, 'gui.py'))
 
 def add_watermark():
     if hasattr(window, 'watermark_handler'):
-        # Use watermark_controls to add watermark controls
         window.watermark_controls.add_watermark_controls()
 
-window = Tk()
+# Initialize customtkinter window
+window = ctk.CTk()
 window.geometry("800x600")
-window.configure(bg="#FFFFFF")
 
 # Create main canvas for the top bar and buttons
-main_canvas = Canvas(window, bg="#FFFFFF", height=60, width=800, bd=0, highlightthickness=0, relief="ridge")
+main_canvas = ctk.CTkCanvas(window, height=60, width=800, bg=get_dynamic_bg_color(), bd=0)
 main_canvas.place(x=0, y=0)
 
 # Get the selected image path from the configuration
@@ -50,26 +57,21 @@ if selected_image_path and os.path.exists(selected_image_path):
 else:
     print("Error: No selected image path found or file does not exist.")
 
-main_canvas.create_rectangle(0.0, 0.0, 800.0, 60.0, fill="#FFFFFF", outline="")
-
-# Button creation
+# Button creation (no images, just text-based buttons)
 buttons = [
-    ("button_1.png", (19.0, 19.0), 63.0, 23.0, return_to_screen1),  # Button to return to screen 1
-    ("button_2.png", (717.0, 19.0), 63.0, 23.0, lambda: print("button_2 clicked")),
-    ("button_3.png", (312.0, 19.0), 78.0, 23.0, add_watermark),  # Button to add watermark
-    ("button_4.png", (400.0, 19.0), 77.9, 23.0, lambda: print("button_4 clicked"))
+    ("Return", (20.0, 20.0), 100.0, 25.0, return_to_screen1),  # Button to return to screen 1
+    ("Save", (680.0, 20.0), 100.0, 25.0, lambda: print("button_2 clicked")),
+    ("Add Watermark", (290.0, 20.0), 100.0, 25.0, add_watermark),  # Button to add watermark
+    ("Button 4", (400.0, 20.0), 100.0, 25.0, lambda: print("button_4 clicked"))
 ]
 
-button_images = []
+def create_button(text, pos, width, height, cmd):
+    button = ctk.CTkButton(window, text=text, width=width, height=height, command=cmd, bg_color=get_dynamic_bg_color())
+    button.place(x=pos[0], y=pos[1])
 
-def create_button(img, pos, width, height, cmd):
-    button_image = PhotoImage(file=relative_to_assets(img))
-    button_images.append(button_image)
-    button = Button(window, image=button_image, borderwidth=0, highlightthickness=0, command=cmd, relief="flat", cursor="hand2")
-    button.place(x=pos[0], y=pos[1], width=width, height=height)
-
-for img, pos, width, height, command in buttons:
-    create_button(img, pos, width, height, command)
+# Create and place all buttons
+for text, pos, width, height, command in buttons:
+    create_button(text, pos, width, height, command)
 
 window.resizable(False, False)
 window.mainloop()

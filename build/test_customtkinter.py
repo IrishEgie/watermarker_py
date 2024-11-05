@@ -2,93 +2,76 @@ import os
 import sys
 from pathlib import Path
 import customtkinter as ctk
-from tkinter import filedialog, messagebox
-from tkinterdnd2 import DND_FILES, TkinterDnD
-from config.config import Config  # Import the Config class
+from config.config import Config
+from config.watermark_handler import WatermarkHandler
+from config.watermark_controls import WatermarkControls
+from gui import WatermarkApp
 
-# Set up the output and asset paths
 OUTPUT_PATH = Path(__file__).parent
-ASSETS_PATH = OUTPUT_PATH / Path(r"/run/media/ejarao/STORAGE/4 Dev Library/1 Src/build/assets/frame0")
+ASSETS_PATH = OUTPUT_PATH / Path(r"/run/media/ejarao/STORAGE/4 Dev Library/2 Python/watermarker_py/build/assets/frame1")
+BG_COLOR_DARK = '#2b2b2b'
+BG_COLOR_LIGHT = '#FFFFFF'
 
-selected_image_path = Config.selected_file_path
+def get_dynamic_bg_color():
+    if ctk.get_appearance_mode() == "dark":
+        return BG_COLOR_DARK
+    else:
+        return BG_COLOR_LIGHT
 
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
 
-def on_drop(event):
-    global selected_image_path
-    file_path = event.data.strip('{}')
-    print(f"File dropped: {file_path}")
-    messagebox.showinfo("File Uploaded", f"File uploaded: {file_path}")
-    Config.selected_file_path = file_path  # Update the global variable
-    open_screen_2()
-
-def select_file():
-    global selected_image_path
-    initial_dir = os.path.join(os.environ['USERPROFILE'], 'Pictures') if sys.platform.startswith('win') else os.path.expanduser('~/Pictures')
-    file_path = filedialog.askopenfilename(initialdir=initial_dir, filetypes=[("All Files", "*.*")])
-    if file_path and any(file_path.lower().endswith(ext) for ext in {'.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff'}):
-        Config.selected_file_path = file_path
-        print(f"File selected: {file_path}")
-        messagebox.showinfo("File Selected", f"File selected: {file_path}")
-        open_screen_2()
-    else:
-        messagebox.showwarning("Invalid File Type", "The selected file is not an image. Please select a valid image file.")
-
-def open_screen_2():
-    print(f"Transitioning to Screen 2 with selected_file_path: {Config.selected_file_path}")  # Debugging output
+def return_to_screen1():
     window.destroy()
-    import gui1  # Import and run Screen 2
+    # Restart the application by running the initial gui.py
+    python = sys.executable
+    os.execl(python, python, os.path.join(OUTPUT_PATH, 'gui.py'))
 
-# Function to manually adjust the text color based on appearance mode (light or dark)
-def update_label_colors(appearance_mode):
-    if appearance_mode == "dark":
-        return "white", "white", "gray"  # Dark mode colors
-    else:
-        return "black", "black", "gray"  # Light mode colors
+def add_watermark():
+    if hasattr(window, 'watermark_handler'):
+        window.watermark_controls.add_watermark_controls()
 
-# Manually set appearance mode, you can toggle this between "dark" and "light"
-appearance_mode = "light"  # Change to "light" to test the light mode
-
-# Set the color theme based on appearance mode
-ctk.set_appearance_mode(appearance_mode)  # Use "dark" or "light" manually
-
-# Set the default theme
-ctk.set_default_color_theme("green")  # You can change the theme to your preference
-
-window = TkinterDnD.Tk()
+# Initialize customtkinter window
+window = ctk.CTk()
 window.geometry("800x600")
-window.title("Watermark Tool")
 
-# Create a dark themed canvas-like container using CTkFrame
-frame = ctk.CTkFrame(window, width=800, height=600)
-frame.place(x=0, y=0)
+# Create main canvas for the top bar and buttons
+main_canvas = ctk.CTkCanvas(window, height=60, width=800, bg=get_dynamic_bg_color(), bd=0)
+main_canvas.place(x=0, y=0)
 
-# Get label colors based on the manually set appearance mode
-title_color, subtitle_color, footer_color = update_label_colors(appearance_mode)
+# Get the selected image path from the configuration
+selected_image_path = Config.selected_file_path
 
-# Label to replace "Add Watermark" text
-title_label = ctk.CTkLabel(frame, text="Add Watermark", font=("Inter Bold", 36), text_color=title_color)
-title_label.place(x=265.0, y=225.0)
+if selected_image_path and os.path.exists(selected_image_path):
+    try:
+        # Initialize WatermarkHandler and place it in the window
+        window.watermark_handler = WatermarkHandler(window, selected_image_path)
+        window.watermark_handler.place(x=0, y=60, width=800, height=540)
+        
+        # Initialize WatermarkControls with the watermark handler
+        window.watermark_controls = WatermarkControls(window.watermark_handler)
+    except Exception as e:
+        print(f"Error loading image: {str(e)}")
+        import traceback
+        traceback.print_exc()  # This will help debug any issues
+else:
+    print("Error: No selected image path found or file does not exist.")
 
-# Subtitle text
-subtitle_label = ctk.CTkLabel(frame, text="or drag your files here", font=("Inter", 12), text_color=subtitle_color)
-subtitle_label.place(x=335.0, y=355.0)
+# Button creation (no images, just text-based buttons)
+buttons = [
+    ("Return", (20.0, 20.0), 100.0, 25.0, return_to_screen1),  # Button to return to screen 1
+    ("Save", (680.0, 20.0), 100.0, 25.0, lambda: print("button_2 clicked")),
+    ("Add Watermark", (290.0, 20.0), 100.0, 25.0, add_watermark),  # Button to add watermark
+    ("Button 4", (400.0, 20.0), 100.0, 25.0, lambda: print("button_4 clicked"))
+]
 
-# Button to select files using CTkButton (replaces the old button with an image)
-select_button = ctk.CTkButton(frame, text="Select File", width=305, height=60, text_color=subtitle_color,command=select_file)
-select_button.place(x=246.0, y=278.0)
+def create_button(text, pos, width, height, cmd):
+    button = ctk.CTkButton(window, text=text, width=width, height=height, command=cmd, bg_color=get_dynamic_bg_color())
+    button.place(x=pos[0], y=pos[1])
 
-# Footer text
-footer_label = ctk.CTkLabel(frame, text="Files stay private. The program processes the files on the device.", font=("Inter", 12), text_color=footer_color)
-footer_label.place(x=215.0, y=455.0)
+# Create and place all buttons
+for text, pos, width, height, command in buttons:
+    create_button(text, pos, width, height, command)
 
-# Enable drag-and-drop on the window
-window.drop_target_register(DND_FILES)
-window.dnd_bind('<<Drop>>', on_drop)
-
-# Make the window non-resizable
 window.resizable(False, False)
-
-# Start the tkinter main loop
 window.mainloop()
