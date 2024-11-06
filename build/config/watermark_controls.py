@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import Image, Label, Scale, Entry, Frame
 from config.watermark_handler import WatermarkHandler
-
+import customtkinter as ctk
 class WatermarkControls:
     def __init__(self, watermark_handler: WatermarkHandler):
         self.watermark_handler = watermark_handler
@@ -25,26 +25,32 @@ class WatermarkControls:
         handle.pack(fill='x', side='top')
 
         # Add the Close Button to the top-right corner of the handle frame
-        close_button = tk.Button(handle,
-            text="X",
-            command=self.close_control_panel,
-            bg="lightgray",  # Dark gray background for the close button
-            fg="black", 
-            relief="flat",  # Flat button style
-            height=0, 
-            width=0,
-            bd=0  # Remove border to make it look cleaner
-        )
-        close_button.pack(side='right')  # Align the button to the right side of the handle frame
+        close_button = ctk.CTkButton(handle,
+                                     text="X",
+                                     command=self.close_control_panel,
+                                     fg_color="lightgray", 
+                                     hover_color="gray",
+                                     width=20, height=20, 
+                                     corner_radius=10,
+                                     text_color="black", 
+                                     border_width=0)
+        close_button.pack(side='right')
         
-        handle.bind("<Enter>", lambda e: handle.config(cursor="hand2"))  # Change cursor to hand when hovering over the control panel handle
-        handle.bind("<Leave>", lambda e: handle.config(cursor="arrow"))  # Restore default cursor
+        handle.bind("<Enter>", lambda e: handle.config(cursor="hand2"))
+        handle.bind("<Leave>", lambda e: handle.config(cursor="arrow"))
         handle.bind('<Button-1>', self.watermark_handler._start_control_panel_drag)
         handle.bind('<B1-Motion>', self.watermark_handler._handle_control_panel_drag)
         handle.bind('<ButtonRelease-1>', self.watermark_handler._stop_control_panel_drag)
 
         controls = [
-            ("Watermark Opacity", Scale, {"from_": 0, "to": 100, "orient": "horizontal", "command": self.watermark_handler._update_watermark, "length": 150, "bg": "white", "troughcolor": "#f0f0f0", "highlightbackground": "white", "highlightcolor": "white"}),
+            ("Watermark Opacity", ctk.CTkSlider, {
+                "from_": 0,
+                "to": 100,
+                "command": self.watermark_handler._update_watermark,
+                "fg_color": "#f0f0f0",  # Light color for the track (inverted effect)
+                "button_color": "#4CAF50",  # Darker color for the button (inverted effect)
+                "width": 150, "height": 20
+            }),
             ("Font Size", Entry, {"width": 20, "bg": "white", "fg": "black"}),
             ("Watermark Text", Entry, {"width": 20, "bg": "white", "fg": "black"}),
             ("Watermark Color", Entry, {"width": 20, "bg": "white", "fg": "black"})
@@ -53,10 +59,13 @@ class WatermarkControls:
         for i, (text, widget_class, props) in enumerate(controls):
             label = Label(self.watermark_handler.control_panel, text=text, bg="white", anchor='w', width=20)
             label.pack(pady=(10 if i == 0 else 0, 0), anchor='w')
+            
             widget = widget_class(self.watermark_handler.control_panel, **props)
             
-            if widget_class == Scale:
-                widget.set(100)
+            if widget_class == ctk.CTkSlider:  # Check if it's the CTkSlider
+                widget.set(100)  # Set the default value to 100 (full opacity)
+                self.watermark_handler.alpha_slider = widget
+                self.watermark_handler._update_watermark()  # Ensure opacity is set correctly on startup
             else:
                 initial_value = {
                     "Font Size": str(self.watermark_handler.watermark_size),
@@ -65,17 +74,13 @@ class WatermarkControls:
                 }.get(text, "")
                 widget.insert(0, initial_value)
                 
-                # In watermark_controls.py
-                if text == "Font Size":
-                    widget.bind('<Return>', self.watermark_handler._update_watermark)
-                    widget.bind('<FocusOut>', self.watermark_handler._update_watermark)
-                else:
-                    widget.bind('<Return>', self.watermark_handler._update_watermark)
-                    widget.bind('<FocusOut>', self.watermark_handler._update_watermark)
+                # Bind the update function for "Font Size", "Watermark Text", and "Watermark Color"
+                widget.bind('<Return>', self.watermark_handler._update_watermark)
+                widget.bind('<FocusOut>', self.watermark_handler._update_watermark)
 
-            
             widget.pack(pady=(0, 10))
             
+            # Assign the widgets to handler
             if text == "Watermark Opacity":
                 self.watermark_handler.alpha_slider = widget
             elif text == "Font Size":
@@ -85,15 +90,16 @@ class WatermarkControls:
             elif text == "Watermark Color":
                 self.watermark_handler.color_entry = widget
 
-        save_button = tk.Button(
-            self.watermark_handler.control_panel,
-            text="Save Image",
-            command=self.watermark_handler.save_watermarked_image,
-            bg="#4CAF50",
-            fg="white",
-            relief="raised",
-            pady=5
-        )
+        # Save Button with CustomTkinter style
+        save_button = ctk.CTkButton(self.watermark_handler.control_panel,
+                                    text="Save Image",
+                                    command=self.watermark_handler.save_watermarked_image,
+                                    fg_color="#4CAF50",
+                                    hover_color="#45a049",
+                                    width=150,
+                                    height=40,
+                                    corner_radius=10,
+                                    text_color="white")
         save_button.pack(pady=(0, 10), padx=10, fill='x')
 
         self.watermark_handler.has_watermark = True

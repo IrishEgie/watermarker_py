@@ -5,8 +5,8 @@ import customtkinter as ctk
 from tkinter import filedialog, messagebox
 from tkinterdnd2 import DND_FILES, TkinterDnD
 from config.config import Config
-from PIL import Image, ImageTk
-from customtkinter import CTkImage 
+from PIL import ImageTk, Image
+from customtkinter import CTkImage  
 
 class WatermarkApp(TkinterDnD.Tk):
     def __init__(self, *args, **kwargs):
