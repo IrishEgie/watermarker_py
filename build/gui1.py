@@ -9,14 +9,7 @@ from gui import WatermarkApp
 
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"/run/media/ejarao/STORAGE/4 Dev Library/2 Python/watermarker_py/build/assets/frame1")
-BG_COLOR_DARK = '#2b2b2b'
-BG_COLOR_LIGHT = '#FFFFFF'
 
-def get_dynamic_bg_color():
-    if Config.appearance_mode == 'dark':
-        return BG_COLOR_DARK
-    else:
-        return BG_COLOR_LIGHT
 
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
@@ -36,7 +29,7 @@ window = ctk.CTk()
 window.geometry("800x600")
 
 # Create main canvas for the top bar and buttons
-main_canvas = ctk.CTkCanvas(window, height=60, width=800, bg=get_dynamic_bg_color(), bd=0)
+main_canvas = ctk.CTkCanvas(window, height=60, width=800, bg=Config.get_dynamic_bg_color(), bd=0)
 main_canvas.place(x=0, y=0)
 
 # Get the selected image path from the configuration
@@ -66,7 +59,7 @@ buttons = [
 ]
 
 def create_button(text, pos, width, height, cmd):
-    button = ctk.CTkButton(window, text=text, width=width, height=height, command=cmd, bg_color=get_dynamic_bg_color())
+    button = ctk.CTkButton(window, text=text, width=width, height=height, command=cmd, bg_color=Config.get_dynamic_bg_color())
     button.place(x=pos[0], y=pos[1])
 
 # Create and place all buttons

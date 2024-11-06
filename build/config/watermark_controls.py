@@ -1,13 +1,15 @@
 import tkinter as tk
-from tkinter import Image, Label, Scale, Entry, Frame
+from tkinter import Image, Scale, Frame
 from config.watermark_handler import WatermarkHandler
 import customtkinter as ctk
+from config.config import Config
 class WatermarkControls:
     def __init__(self, watermark_handler: WatermarkHandler):
         self.watermark_handler = watermark_handler
-
+    
     def add_watermark_controls(self):
         """Add watermark controls to the UI"""
+        title_color, subtitle_color, footer_color = Config._update_label_colors()
         if self.watermark_handler.has_watermark:
             return
         
@@ -17,8 +19,8 @@ class WatermarkControls:
         self.watermark_handler.image = self.watermark_handler.base_image.copy()
         self.watermark_handler.update_display()
         
-        self.watermark_handler.control_panel = Frame(self.watermark_handler, bg="white", relief="raised", borderwidth=1)
-        self.watermark_handler.control_panel.place(x=20, y=20, width=180, height=340)
+        self.watermark_handler.control_panel = Frame(self.watermark_handler, bg=Config.get_dynamic_bg_color(), relief="raised", borderwidth=1)
+        self.watermark_handler.control_panel.place(x=20, y=20, width=180, height=360)
         
         # Modify the handle frame to have 'whitesmoke' background color
         handle = Frame(self.watermark_handler.control_panel, bg="lightgray", height=20)
@@ -32,7 +34,7 @@ class WatermarkControls:
                                      hover_color="gray",
                                      width=20, height=20, 
                                      corner_radius=10,
-                                     text_color="black", 
+                                     text_color=subtitle_color, 
                                      border_width=0)
         close_button.pack(side='right')
         
@@ -43,29 +45,37 @@ class WatermarkControls:
         handle.bind('<ButtonRelease-1>', self.watermark_handler._stop_control_panel_drag)
 
         controls = [
-            ("Watermark Opacity", ctk.CTkSlider, {
-                "from_": 0,
-                "to": 100,
-                "command": self.watermark_handler._update_watermark,
-                "fg_color": "#f0f0f0",  # Light color for the track (inverted effect)
-                "button_color": "#4CAF50",  # Darker color for the button (inverted effect)
-                "width": 150, "height": 20
-            }),
-            ("Font Size", Entry, {"width": 20, "bg": "white", "fg": "black"}),
-            ("Watermark Text", Entry, {"width": 20, "bg": "white", "fg": "black"}),
-            ("Watermark Color", Entry, {"width": 20, "bg": "white", "fg": "black"})
+            ("Watermark Opacity", Scale, {"from_": 0, "to": 100, "orient": "horizontal", 
+                                        "command": self.watermark_handler._update_watermark, 
+                                        "length": 150, "bg": Config.get_dynamic_bg_color(), 
+                                        "troughcolor": "#f0f0f0", 
+                                        "highlightbackground": "white", "highlightcolor": "white"}),
+            
+            ("Font Size", ctk.CTkEntry, {"width": 150, 
+                                        "fg_color": Config.get_dynamic_bg_color(), 
+                                        "text_color": subtitle_color, 
+                                        "corner_radius": 8}),
+            
+            ("Watermark Text", ctk.CTkEntry, {"width": 150, 
+                                            "fg_color": Config.get_dynamic_bg_color(), 
+                                            "text_color": subtitle_color, 
+                                            "corner_radius": 8}),
+            
+            ("Watermark Color", ctk.CTkEntry, {"width": 150, 
+                                            "fg_color": Config.get_dynamic_bg_color(), 
+                                            "text_color": subtitle_color, 
+                                            "corner_radius": 8})
         ]
 
         for i, (text, widget_class, props) in enumerate(controls):
-            label = Label(self.watermark_handler.control_panel, text=text, bg="white", anchor='w', width=20)
+            # Replace tkinter Label with customtkinter CTkLabel
+            label = ctk.CTkLabel(self.watermark_handler.control_panel, text=text, fg_color=Config.get_dynamic_bg_color(), bg_color=Config.get_dynamic_bg_color(), anchor='w', width=20)
             label.pack(pady=(10 if i == 0 else 0, 0), anchor='w')
             
             widget = widget_class(self.watermark_handler.control_panel, **props)
             
-            if widget_class == ctk.CTkSlider:  # Check if it's the CTkSlider
-                widget.set(100)  # Set the default value to 100 (full opacity)
-                self.watermark_handler.alpha_slider = widget
-                self.watermark_handler._update_watermark()  # Ensure opacity is set correctly on startup
+            if widget_class == Scale:
+                widget.set(100)
             else:
                 initial_value = {
                     "Font Size": str(self.watermark_handler.watermark_size),
@@ -74,13 +84,16 @@ class WatermarkControls:
                 }.get(text, "")
                 widget.insert(0, initial_value)
                 
-                # Bind the update function for "Font Size", "Watermark Text", and "Watermark Color"
-                widget.bind('<Return>', self.watermark_handler._update_watermark)
-                widget.bind('<FocusOut>', self.watermark_handler._update_watermark)
-
+                # In watermark_controls.py
+                if text == "Font Size":
+                    widget.bind('<Return>', self.watermark_handler._update_watermark)
+                    widget.bind('<FocusOut>', self.watermark_handler._update_watermark)
+                else:
+                    widget.bind('<Return>', self.watermark_handler._update_watermark)
+                    widget.bind('<FocusOut>', self.watermark_handler._update_watermark)
+            
             widget.pack(pady=(0, 10))
             
-            # Assign the widgets to handler
             if text == "Watermark Opacity":
                 self.watermark_handler.alpha_slider = widget
             elif text == "Font Size":
