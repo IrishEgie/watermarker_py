@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import Image, Scale, Frame
+from tkinter import Image, Frame
 from config.watermark_handler import WatermarkHandler
 import customtkinter as ctk
 from config.config import Config
@@ -45,12 +45,14 @@ class WatermarkControls:
         handle.bind('<ButtonRelease-1>', self.watermark_handler._stop_control_panel_drag)
 
         controls = [
-            ("Watermark Opacity", Scale, {"from_": 0, "to": 100, "orient": "horizontal", 
-                                        "command": self.watermark_handler._update_watermark, 
-                                        "length": 150, "bg": Config.get_dynamic_bg_color(), 
-                                        "troughcolor": "#f0f0f0", 
-                                        "highlightbackground": "white", "highlightcolor": "white"}),
-            
+            ("Watermark Opacity", ctk.CTkSlider, {
+                "from_": 0,
+                "to": 100,
+                "command": self.watermark_handler._update_watermark,
+                "fg_color": "#f0f0f0",  # Light color for the track (inverted effect)
+                "button_color": "#4CAF50",  # Darker color for the button (inverted effect)
+                "width": 150, "height": 20
+            }),
             ("Font Size", ctk.CTkEntry, {"width": 150, 
                                         "fg_color": Config.get_dynamic_bg_color(), 
                                         "text_color": subtitle_color, 
@@ -70,12 +72,12 @@ class WatermarkControls:
         for i, (text, widget_class, props) in enumerate(controls):
             # Replace tkinter Label with customtkinter CTkLabel
             label = ctk.CTkLabel(self.watermark_handler.control_panel, text=text, fg_color=Config.get_dynamic_bg_color(), bg_color=Config.get_dynamic_bg_color(), anchor='w', width=20)
-            label.pack(pady=(10 if i == 0 else 0, 0), anchor='w')
+            label.pack(padx=15 ,pady=(10 if i == 0 else 0, 0), anchor='w')
             
             widget = widget_class(self.watermark_handler.control_panel, **props)
             
-            if widget_class == Scale:
-                widget.set(100)
+            if widget_class == ctk.CTkSlider:
+                widget.set(100)  # Set the initial value of the slider (equivalent to the scale's default value)
             else:
                 initial_value = {
                     "Font Size": str(self.watermark_handler.watermark_size),
@@ -110,10 +112,10 @@ class WatermarkControls:
                                     fg_color="#4CAF50",
                                     hover_color="#45a049",
                                     width=150,
-                                    height=40,
+                                    height=25,
                                     corner_radius=10,
                                     text_color="white")
-        save_button.pack(pady=(0, 10), padx=10, fill='x')
+        save_button.pack(pady=(0, 10), padx=15, fill='x')
 
         self.watermark_handler.has_watermark = True
         self.watermark_handler.watermark_layer = Image.new('RGBA', self.watermark_handler.image.size, (0, 0, 0, 0))
