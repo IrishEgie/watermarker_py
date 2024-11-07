@@ -1,0 +1,10 @@
+# Core GUI requirements
+customtkinter>=5.2.0
+tkinterdnd2>=0.3.0
+Pillow>=10.0.0  # For image processing (PIL)
+
+# System requirements are handled by Python's standard library:
+# - tkinter (usually comes with Python)
+# - os
+# - sys
+# - pathlib
