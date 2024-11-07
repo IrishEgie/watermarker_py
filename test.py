@@ -1,32 +1,42 @@
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
+import os
+from PIL import Image, ImageDraw, ImageFont
 
-# Create figure
-fig = plt.figure(figsize=(10, 8))
+def text(input_image_path, output_path, text_color=(255, 0, 0), opacity=255):
+    # Open the original image
+    image = Image.open(input_image_path).convert("RGBA")
+    
+    # Create an empty "overlay" with the same size as the original image (transparent)
+    text_layer = Image.new("RGBA", image.size, (0, 0, 0, 0))  # Transparent layer
 
-# Create GridSpec with custom layout (3 rows, 3 columns)
-gs = gridspec.GridSpec(nrows=3, ncols=3, figure=fig)
+    draw = ImageDraw.Draw(text_layer)
+    y = 10
 
-# Define subplots within the GridSpec
-ax1 = fig.add_subplot(gs[0, 0])  # First row, first column
-ax2 = fig.add_subplot(gs[0, 1:])  # First row, spanning second and third columns
-ax3 = fig.add_subplot(gs[1:, 0])  # Second and third rows, first column
-ax4 = fig.add_subplot(gs[1:, 1:])  # Bottom-right section
+    # Path to a default font (replace with the correct path if necessary)
+    font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+    if not os.path.isfile(font_path):
+        print(f"Font {font_path} not found. Using default font.")
+        font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"  # Another fallback font
 
-# Plot data
-ax1.plot([1, 2, 3], [1, 4, 9])
-ax2.plot([1, 2, 3], [9, 4, 1])
-ax3.plot([1, 2, 3], [3, 6, 9])
-ax4.plot([1, 2, 3], [1, 2, 3])
+    for font_size in range(12, 75, 10):
+        try:
+            font = ImageFont.truetype(font_path, size=font_size)
+        except OSError:
+            print(f"Error: Unable to load font at size {font_size}.")
+            continue
 
-# Set titles for each subplot
-ax1.set_title("Subplot 1")
-ax2.set_title("Subplot 2")
-ax3.set_title("Subplot 3")
-ax4.set_title("Subplot 4")
+        # Adjust the color and opacity
+        color_with_opacity = (*text_color, opacity)  # RGBA
 
-# Adjust layout to prevent overlap
-plt.tight_layout()
+        # Draw the text onto the text layer (which is transparent)
+        draw.text((10, y), f"Chihuly Exhibit (font_size={font_size})", font=font, fill=color_with_opacity)
+        y += 35
 
-# Show plot
-plt.show()
+    # Composite the text_layer onto the original image
+    final_image = Image.alpha_composite(image, text_layer)
+
+    # Save the resulting image
+    final_image.save(output_path, format="PNG")  # Use PNG to support transparency
+
+if __name__ == "__main__":
+    # Example usage with text color and opacity
+    text("img/test.jpg", "output_with_opacity.png", text_color=(0, 255, 0), opacity=30)
